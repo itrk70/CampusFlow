@@ -1,0 +1,171 @@
+{
+  "name": "",
+  "regularClasses": [
+    {
+      "subject": "Engineering Chemistry Lab",
+      "professor": "Dr. Arnab Samanta + Mr. Ritesh Das",
+      "building": "UB-IV",
+      "room": "007",
+      "start": "10:00",
+      "end": "11:00",
+      "days": [
+        1
+      ]
+    },
+    {
+      "subject": "Design Thinking",
+      "professor": "Mr. Pradyut Chowdhury",
+      "building": "UB-VI",
+      "room": "610",
+      "start": "13:00",
+      "end": "14:00",
+      "days": [
+        1
+      ]
+    },
+    {
+      "subject": "Understanding Harmony and Ethical Human Conduct",
+      "professor": "Dr. Manasi Patra",
+      "building": "UB-VI",
+      "room": "610",
+      "start": "14:00",
+      "end": "16:00",
+      "days": [
+        1
+      ]
+    },
+    {
+      "subject": "Programming for Problem Solving",
+      "professor": "Dr. Riya Sil",
+      "building": "UB-VI",
+      "room": "611",
+      "start": "11:00",
+      "end": "13:00",
+      "days": [
+        2
+      ]
+    },
+    {
+      "subject": "Programming for Problem Solving Lab",
+      "professor": "Dr. Riya Sil Chatterjee + Mr. Ayan Mondal",
+      "building": "UB-V",
+      "room": "204",
+      "start": "14:00",
+      "end": "16:00",
+      "days": [
+        2
+      ]
+    },
+    {
+      "subject": "Engineering Chemistry",
+      "professor": "Dr. Arnab Samanta",
+      "building": "UB-VI",
+      "room": "610",
+      "start": "16:00",
+      "end": "18:00",
+      "days": [
+        2
+      ]
+    },
+    {
+      "subject": "Engineering Chemistry",
+      "professor": "Dr. Arnab Samanta",
+      "building": "UB-VI",
+      "room": "611",
+      "start": "11:00",
+      "end": "12:00",
+      "days": [
+        3
+      ]
+    },
+    {
+      "subject": "Calculus",
+      "professor": "Dr. Santu Mondal",
+      "building": "UB-VI",
+      "room": "611",
+      "start": "12:00",
+      "end": "13:00",
+      "days": [
+        3
+      ]
+    },
+    {
+      "subject": "English for Technical Communication",
+      "professor": "Ms. Oindrila Roy",
+      "building": "UB-VI",
+      "room": "611",
+      "start": "13:00",
+      "end": "15:00",
+      "days": [
+        3
+      ]
+    },
+    {
+      "subject": "Programming for Problem Solving",
+      "professor": "Dr. Riya Sil",
+      "building": "UB-IV",
+      "room": "316",
+      "start": "12:00",
+      "end": "14:00",
+      "days": [
+        4
+      ]
+    },
+    {
+      "subject": "Workshop & Manufacturing Practices",
+      "professor": "Dr. Soumyabrata Chakravarty",
+      "building": "UB-IV",
+      "room": "B001/B015",
+      "start": "15:00",
+      "end": "17:00",
+      "days": [
+        4
+      ]
+    },
+    {
+      "subject": "Engineering Chemistry",
+      "professor": "Dr. Arnab Samanta",
+      "building": "UB-V",
+      "room": "306",
+      "start": "11:00",
+      "end": "12:00",
+      "days": [
+        5
+      ]
+    },
+    {
+      "subject": "Calculus",
+      "professor": "Dr. Santu Mondal",
+      "building": "UB-VI",
+      "room": "306",
+      "start": "12:00",
+      "end": "14:00",
+      "days": [
+        5
+      ]
+    },
+    {
+      "subject": "English for Technical Communication",
+      "professor": "Ms. Oindrila Roy",
+      "building": "UB-VI",
+      "room": "610",
+      "start": "15:00",
+      "end": "16:00",
+      "days": [
+        5
+      ]
+    },
+    {
+      "subject": "Environmental Sciences",
+      "professor": "Mr. Chandan Santra",
+      "building": "UB-VI",
+      "room": "610",
+      "start": "16:00",
+      "end": "18:00",
+      "days": [
+        5
+      ]
+    }
+  ],
+  "extraSessions": []
+}
