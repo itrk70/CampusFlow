@@ -26,7 +26,15 @@
    ========================================================= */
 
 const CAMPUSFLOW_EVENTS = [
-
+  {
+    name: "THE INNER FIGHT: From Fear to Confidence",
+    date: "2026-09-19",
+    startTime: "14:00",
+    endTime: "16:00",
+    venue: "UB-II, Auditorium",
+    description: "A full day of project showcases, guest talks, and workshops from student clubs across departments. Open to all years — drop by any time.",
+    image: "https://example.com/path-to-a-banner-image.jpg"
+  }
   // ---- SAMPLE EVENT (commented out — copy this shape) ----
   // {
   //   name: "Annual Tech Fest — Innovate 2026",
