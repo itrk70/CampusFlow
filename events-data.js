@@ -50,7 +50,7 @@ window.CAMPUSFLOW_EVENTS = [
       image: "assets/photography-competetion-2026.jpeg",
    },
    {
-      name: "ARDUINO EDGE AI HACKATHON",
+      name: "Arduino Edge AI Hackathon",
       date: "2026-10-06",
       startTime: "00:00",
       endTime: null,
