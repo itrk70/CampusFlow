@@ -58,6 +58,15 @@ window.CAMPUSFLOW_EVENTS = [
       description: "The AI & Tech Club, IEEE Student Branch – Brainware University, in association with the Department of Computer Science & Engineering (CSE) and Institution’s Innovation Council (IIC), Brainware University, in collaboration with StemLore, is organizing the Arduino Edge AI Hackathon 2026 – Build, Innovate & Deploy as part of the IEEE Day Celebration 2026.",
       image: null,
    },
+   {
+      name: "Coaster Making Competetion",
+      date: "2026-10-01",
+      startTime: "09:00",
+      endTime: "13:00",
+      venue: "UB-III, 405",
+      description: "The Art & Craft Club, Brainware University is organising a Coaster Making Competition to encourage creativity, artistic expression, and hands-on craft skills among students.",
+      image: null,
+   },
 ];
 // ---- SAMPLE EVENT (commented out — copy this shape) ----
 // {
