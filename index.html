@@ -1,652 +1,840 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>CampusFlow — Your day, mapped out</title>
-<meta name="description" content="A privacy-first, offline schedule tracker for students. No login, no server, just your timetable.">
-<meta name="theme-color" content="#0F1B33">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%230F1B33%22/><path d=%22M22 50 L45 50 L45 72%22 stroke=%22%2334C99A%22 stroke-width=%228%22 fill=%22none%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/><circle cx=%2270%22 cy=%2232%22 r=%226%22 fill=%22%23E3A73B%22/></svg>">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
-<script src="https://kit.fontawesome.com/826e39b053.js" crossorigin="anonymous"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>CampusFlow — Your day, mapped out</title>
+  <meta name="description"
+    content="A privacy-first, offline schedule tracker for students. No login, no server, just your timetable.">
+  <meta name="theme-color" content="#0F1B33">
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%230F1B33%22/><path d=%22M22 50 L45 50 L45 72%22 stroke=%22%2334C99A%22 stroke-width=%228%22 fill=%22none%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/><circle cx=%2270%22 cy=%2232%22 r=%226%22 fill=%22%23E3A73B%22/></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://kit.fontawesome.com/826e39b053.js" crossorigin="anonymous"></script>
 </head>
+
 <body data-theme="light">
 
-<!-- ============ TOP BAR (persistent, all screen sizes) ============ -->
-<header class="topbar">
-  <div class="topbar__left">
-    <button class="hamburger-btn" id="btn-hamburger" aria-label="Open menu">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
-    </button>
-    <span class="topbar__brand">CampusFlow</span>
-  </div>
-  <nav class="topbar__nav" aria-label="Primary">
-    <button class="topnav-link is-active" data-view="dashboard">Dashboard</button>
-    <button class="topnav-link" data-view="classes">Classes</button>
-    <button class="topnav-link" data-view="works">Works</button>
-    <button class="topnav-link" data-view="events">Events</button>
-    <button class="topnav-link" data-view="settings">Settings</button>
-  </nav>
-  <button class="avatar avatar--topbar" id="btn-avatar" aria-label="Your profile" title="Profile">
-    <span id="avatar-initials">S</span>
-    <img id="avatar-picture" alt="" hidden>
-  </button>
-</header>
-
-<div id="app">
-
-  <!-- ============ VIEW: DASHBOARD ============ -->
-  <section id="view-dashboard" class="view is-active" aria-label="Dashboard">
-    <header class="head head--dashboard">
-      <div class="head__row">
-        <div>
-          <p class="head__eyebrow" id="greeting-line">Tuesday, October 24</p>
-          <h1 class="head__title" id="dashboard-greeting-title">CampusFlow</h1>
-        </div>
-      </div>
-    </header>
-
-    <main class="content">
-      <section class="stat-row" aria-label="Today's summary">
-        <div class="stat-card">
-          <span class="stat-card__num" id="stat-today">0</span>
-          <span class="stat-card__label">Today's<br>classes</span>
-        </div>
-        <div class="stat-card">
-          <span class="stat-card__num" id="stat-extra">0</span>
-          <span class="stat-card__label">Extra<br>sessions</span>
-        </div>
-        <div class="stat-card">
-          <span class="stat-card__num" id="stat-upcoming">0</span>
-          <span class="stat-card__label">Upcoming<br>this week</span>
-        </div>
-      </section>
-
-      <section class="panel" id="attendance-panel">
-        <div class="panel__title-row">
-          <h2 class="panel__title">Today's attendance</h2>
-        </div>
-        <div id="attendance-empty" class="attendance-empty" hidden>No classes scheduled today.</div>
-        <div class="attendance-wrap" id="attendance-wrap">
-          <div class="attendance-chart-holder">
-            <svg id="attendance-donut" viewBox="0 0 200 200" class="attendance-donut" aria-hidden="true"></svg>
-            <div class="attendance-center">
-              <span class="attendance-center__num" id="attendance-total-num">0</span>
-              <span class="attendance-center__label">attendance</span>
-            </div>
-            <div class="attendance-tooltip" id="attendance-tooltip" hidden></div>
-          </div>
-          <div class="attendance-legend" id="attendance-legend"></div>
-        </div>
-      </section>
-
-      <section class="panel">
-        <h2 class="panel__title">Manage schedule</h2>
-        <div class="manage-row">
-          <button class="manage-btn" id="btn-add-regular">
-            <span class="manage-btn__icon manage-btn__icon--ink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="16" rx="2.5"/><path d="M8 3v4M16 3v4M3.5 10h17"/></svg></span>
-            <span class="manage-btn__text">Add regular<br>class</span>
-            <span class="manage-btn__plus">+ Add</span>
-          </button>
-          <button class="manage-btn" id="btn-add-extra">
-            <span class="manage-btn__icon manage-btn__icon--emerald"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3 4 14h6l-1 7 9-11h-6l1-7Z"/></svg></span>
-            <span class="manage-btn__text">Add extra<br>session</span>
-            <span class="manage-btn__plus">+ Add</span>
-          </button>
-        </div>
-      </section>
-
-      <section class="panel">
-        <h2 class="panel__title">Weekly overview</h2>
-        <div class="week-ribbon" id="week-ribbon"></div>
-      </section>
-
-      <section class="panel" id="dashboard-preview-panel">
-        <div class="panel__title-row">
-          <h2 class="panel__title">Rest of today</h2>
-          <button class="link-btn" id="btn-see-all-today">See all →</button>
-        </div>
-        <div id="dashboard-preview-list" class="preview-list"></div>
-      </section>
-
-      <section class="panel">
-        <div class="panel__title-row">
-          <h2 class="panel__title">Works due soon</h2>
-          <button class="link-btn" id="btn-see-all-works">See all →</button>
-        </div>
-        <div id="dashboard-works-preview" class="preview-list"></div>
-      </section>
-
-      <button class="events-banner" id="btn-dashboard-events">
-        <span class="events-banner__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="16" rx="2.5"/><path d="M8 3v4M16 3v4M3.5 10h17"/></svg></span>
-        <span class="events-banner__text">
-          <strong>Campus Events</strong>
-          <span id="events-banner-sub">See what's happening around campus</span>
-        </span>
-        <span class="events-banner__arrow">→</span>
+  <!-- ============ TOP BAR (persistent, all screen sizes) ============ -->
+  <header class="topbar">
+    <div class="topbar__left">
+      <button class="hamburger-btn" id="btn-hamburger" aria-label="Open menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M4 7h16M4 12h16M4 17h16" />
+        </svg>
       </button>
-    </main>
-  </section>
-
-  <!-- ============ VIEW: TODAY'S CLASSES ============ -->
-  <section id="view-classes" class="view" aria-label="Today's classes">
-    <header class="head head--classes">
-      <div class="head__row">
-        <div>
-          <h1 class="head__title">Today's Classes</h1>
-          <p class="head__eyebrow" id="classes-date-line">Wednesday, October 25th</p>
-        </div>
-        <button class="icon-btn" id="btn-jump-today" aria-label="Jump to today"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="16" rx="2.5"/><path d="M8 3v4M16 3v4M3.5 10h17"/></svg></button>
-      </div>
-    </header>
-
-    <main class="content content--timeline">
-      <div id="timeline-empty" class="empty-state" hidden>
-        <div class="empty-state__mark">＋</div>
-        <p class="empty-state__title">Nothing scheduled today</p>
-        <p class="empty-state__body">Add a regular class or an extra session and it'll show up here, sorted by time.</p>
-      </div>
-      <ol id="timeline-list" class="timeline-list"></ol>
-    </main>
-
-    <button class="fab" id="btn-fab-add" aria-label="Add a session">+</button>
-  </section>
-
-  <!-- ============ VIEW: WORKS ============ -->
-  <section id="view-works" class="view" aria-label="Works">
-    <header class="head head--works">
-      <div class="head__row">
-        <div>
-          <h1 class="head__title">Works</h1>
-          <p class="head__eyebrow" id="works-summary-line">Assignments &amp; lab work</p>
-        </div>
-        <button class="icon-btn icon-btn--static"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1"/><path d="M8.5 11.5l1.7 1.7L13.5 10"/><path d="M8.5 16.5h7"/></svg></button>
-      </div>
-    </header>
-
-    <main class="content content--timeline">
-      <div id="works-empty" class="empty-state" hidden>
-        <div class="empty-state__mark">＋</div>
-        <p class="empty-state__title">No works added yet</p>
-        <p class="empty-state__body">Track assignments and lab work with due dates — they'll show up here.</p>
-      </div>
-      <ol id="works-list" class="timeline-list"></ol>
-    </main>
-
-    <button class="fab" id="btn-fab-add-work" aria-label="Add a work">+</button>
-  </section>
-
-  <!-- ============ VIEW: EVENTS ============ -->
-  <section id="view-events" class="view" aria-label="Events">
-    <header class="head head--events">
-      <div class="head__row">
-        <div>
-          <h1 class="head__title">Events</h1>
-          <p class="head__eyebrow">Campus-wide — same for everyone</p>
-        </div>
-      </div>
-    </header>
-
-    <main class="content">
-      <div id="events-empty" class="empty-state" hidden>
-        <div class="empty-state__mark">🎪</div>
-        <p class="empty-state__title">No events published yet</p>
-        <p class="empty-state__body">Check back soon — campus events will show up here.</p>
-      </div>
-      <div id="events-list" class="events-list"></div>
-    </main>
-  </section>
-
-  <!-- ============ VIEW: SETTINGS ============ -->
-  <section id="view-settings" class="view" aria-label="Settings">
-    <header class="head head--settings">
-      <div class="head__row">
-        <h1 class="head__title">Settings</h1>
-        <span class="icon-btn icon-btn--static"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" /></svg></span>
-      </div>
-    </header>
-
-    <main class="content">
-
-      <section class="panel">
-        <h2 class="panel__title">Profile</h2>
-        <div class="upload-row">
-          <div class="upload-row__label">
-            <span class="row-btn__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4.5" width="17" height="15" rx="2.3"/><circle cx="9" cy="10" r="1.6"/><path d="M4.5 16.5 9 12.5l3 2.6 3.5-3.6 4 4.4"/></svg></span>
-            <span>Profile picture</span>
-          </div>
-          <div class="upload-row__actions" id="picture-actions"></div>
-          <input type="file" id="file-picture" accept="image/jpeg,image/png" hidden>
-        </div>
-        <div class="upload-row">
-          <div class="upload-row__label">
-            <span class="row-btn__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3.5h7l4 4V20a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1Z"/><path d="M14 3.5V8h4"/></svg></span>
-            <span>Student ID card</span>
-          </div>
-          <div class="upload-row__actions" id="idcard-actions"></div>
-          <input type="file" id="file-idcard" accept="application/pdf" hidden>
-        </div>
-      </section>
-
-      <section class="panel">
-        <h2 class="panel__title">Add classes from preset</h2>
-        <p class="panel__hint">Pick your class &amp; group to instantly fill in your regular classes — no manual entry needed.</p>
-        <div class="preset-row">
-          <select class="select select--wide" id="select-preset">
-            <option value="">Select class &amp; group</option>
-            <option value="CSE-E1">CSE — Section E, Group E1</option>
-            <option value="CSE-E2">CSE — Section E, Group E2</option>
-          </select>
-          <button class="btn btn--primary" id="btn-apply-preset">Add</button>
-        </div>
-      </section>
-
-      <section class="panel">
-        <h2 class="panel__title">Notification controls</h2>
-        <div class="setting-row">
-          <div class="setting-row__text">
-            <span class="setting-row__label">Class notifications</span>
-            <span class="setting-row__sub">Alert 15 minutes before a session starts</span>
-          </div>
-          <button class="switch" id="toggle-notifications" role="switch" aria-checked="false"><span class="switch__knob"></span></button>
-        </div>
-        <div class="setting-row">
-          <div class="setting-row__text">
-            <span class="setting-row__label">System vibration</span>
-            <span class="setting-row__sub">Buzz the device alongside the alert</span>
-          </div>
-          <button class="switch" id="toggle-vibration" role="switch" aria-checked="false"><span class="switch__knob"></span></button>
-        </div>
-        <button class="setting-row setting-row--link" id="btn-sound">
-          <div class="setting-row__text">
-            <span class="setting-row__label">Notification sound</span>
-          </div>
-          <span class="setting-row__value" id="sound-value">Default ›</span>
-        </button>
-        <p class="notif-status" id="notif-status"></p>
-      </section>
-
-      <section class="panel">
-        <h2 class="panel__title">App preferences</h2>
-        <div class="setting-row">
-          <div class="setting-row__text">
-            <span class="setting-row__label">Dark mode</span>
-          </div>
-          <button class="switch" id="toggle-dark" role="switch" aria-checked="false"><span class="switch__knob"></span></button>
-        </div>
-        <div class="setting-row">
-          <div class="setting-row__text">
-            <span class="setting-row__label">Default starting tab</span>
-          </div>
-          <select class="select" id="select-default-tab">
-            <option value="dashboard">Dashboard</option>
-            <option value="classes">Classes</option>
-            <option value="works">Works</option>
-          </select>
-        </div>
-      </section>
-
-      <section class="panel">
-        <h2 class="panel__title">Schedule management</h2>
-        <button class="row-btn" id="btn-manage-regular">
-          <span>Add / edit regular classes</span>
-          <span class="row-btn__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l.9-4.2L15.8 5 19 8.2 8.2 19 4 20Z"/><path d="M13.5 6.5 17.5 10.5"/></svg></span>
-        </button>
-        <button class="row-btn" id="btn-manage-extra">
-          <span>Add / edit extra sessions</span>
-          <span class="row-btn__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="16" rx="2.5"/><path d="M8 3v4M16 3v4M3.5 10h17"/></svg></span>
-        </button>
-        <button class="row-btn" id="btn-manage-works">
-          <span>Add / edit works</span>
-          <span class="row-btn__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M8.5 11.5l1.7 1.7L13.5 10"/><path d="M8.5 16.5h7"/></svg></span>
-        </button>
-        <button class="row-btn row-btn--danger" id="btn-clear-data">
-          <span>Clear local schedule data</span>
-          <span class="row-btn__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 7h15M9.5 7V5a1.5 1.5 0 0 1 1.5-1.5h2A1.5 1.5 0 0 1 14.5 5v2M6.5 7l.8 12.2a2 2 0 0 0 2 1.8h5.4a2 2 0 0 0 2-1.8L17.5 7"/><path d="M10.2 11v6M13.8 11v6"/></svg></span>
-        </button>
-      </section>
-
-      <section class="panel">
-        <h2 class="panel__title">Data &amp; synchronization</h2>
-        <p class="panel__hint">Everything stays on this device. Use export/import to move your schedule to another one.</p>
-        <button class="row-btn" id="btn-export">
-          <span>Export schedule data (JSON)</span>
-          <span class="row-btn__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5v11.5M7.5 11l4.5 4.5L16.5 11"/><path d="M4.5 17.5V19a1.5 1.5 0 0 0 1.5 1.5h12a1.5 1.5 0 0 0 1.5-1.5v-1.5"/></svg></span>
-        </button>
-        <button class="row-btn" id="btn-import">
-          <span>Import schedule data (JSON)</span>
-          <span class="row-btn__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15.5V4M7.5 8.5 12 4l4.5 4.5"/><path d="M4.5 17.5V19a1.5 1.5 0 0 0 1.5 1.5h12a1.5 1.5 0 0 0 1.5-1.5v-1.5"/></svg></span>
-        </button>
-        <input type="file" id="file-import" accept="application/json" hidden>
-      </section>
-
-      <section class="panel">
-        <h2 class="panel__title">More</h2>
-        <button class="row-btn" id="btn-view-events">
-          <span>View campus events</span>
-          <span class="row-btn__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span>
-        </button>
-        <a class="row-btn" href="developer/" id="btn-view-developer">
-          <span>View developer page</span>
-          <span class="row-btn__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></span>
-        </a>
-      </section>
-
-      <section class="panel">
-        <h2 class="panel__title">About &amp; info</h2>
-        <div class="about-row"><span>Privacy policy</span><span class="about-row__val">Everything stays on-device ›</span></div>
-        <div class="about-row"><span>Version</span><span class="about-row__val">v2.0.0</span></div>
-        <div class="about-row"><span>Storage used</span><span class="about-row__val" id="storage-used">—</span></div>
-      </section>
-    </main>
-  </section>
-
-  <!-- ============ BOTTOM NAV (mobile only) ============ -->
-  <nav class="bottom-nav" aria-label="Primary mobile">
-    <button class="nav-btn is-active" data-view="dashboard">
-      <span class="nav-btn__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11.5 12 4l8 7.5"/><path d="M6 10v9.5a1 1 0 0 0 1 1h3.5V15h3v5.5H17a1 1 0 0 0 1-1V10"/></svg></span><span>Dashboard</span>
-    </button>
-    <button class="nav-btn" data-view="classes">
-      <span class="nav-btn__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4" width="17" height="5" rx="1.3"/><rect x="3.5" y="14" width="17" height="5" rx="1.3"/><path d="M7 6.5h.01M7 16.5h.01"/></svg></span><span>Classes</span>
-    </button>
-    <button class="nav-btn" data-view="works">
-      <span class="nav-btn__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M8.5 11.5l1.7 1.7L13.5 10"/><path d="M8.5 16.5h7"/></svg></span><span>Works</span>
-    </button>
-    <button class="nav-btn" data-view="settings">
-      <span class="nav-btn__icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" /></svg></span><span>Settings</span>
-    </button>
-  </nav>
-</div>
-
-<!-- ============ DRAWER (hamburger slide-out, left, all sizes) ============ -->
-<div class="side-panel side-panel--left" id="panel-drawer">
-  <div class="side-panel__backdrop" data-close-panel="panel-drawer"></div>
-  <div class="side-panel__sheet side-panel__sheet--left">
-    <div class="side-panel__head">
       <span class="topbar__brand">CampusFlow</span>
-      <button class="modal__close" data-close-panel="panel-drawer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
     </div>
-    <nav class="drawer-nav">
-      <button class="drawer-link" data-view="dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11.5 12 4l8 7.5"/><path d="M6 10v9.5a1 1 0 0 0 1 1h3.5V15h3v5.5H17a1 1 0 0 0 1-1V10"/></svg><span>Dashboard</span></button>
-      <button class="drawer-link" data-view="classes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4" width="17" height="5" rx="1.3"/><rect x="3.5" y="14" width="17" height="5" rx="1.3"/><path d="M7 6.5h.01M7 16.5h.01"/></svg><span>Classes</span></button>
-      <button class="drawer-link" data-view="works"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M8.5 11.5l1.7 1.7L13.5 10"/><path d="M8.5 16.5h7"/></svg><span>Works</span></button>
-      <button class="drawer-link" data-view="events"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="16" rx="2.5"/><path d="M8 3v4M16 3v4M3.5 10h17"/></svg><span>Events</span></button>
-      <button class="drawer-link" data-view="settings"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" /></svg><span>Settings</span></button>
-      <a class="drawer-link" href="developer/"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 7 3.5 12l5 5M15.5 7l5 5-5 5M13.5 4.5l-3 15"/></svg><span>Developer</span></a>
+    <nav class="topbar__nav" aria-label="Primary">
+      <button class="topnav-link is-active" data-view="dashboard">Dashboard</button>
+      <button class="topnav-link" data-view="classes">Classes</button>
+      <button class="topnav-link" data-view="works">Works</button>
+      <button class="topnav-link" data-view="events">Events</button>
+      <button class="topnav-link" data-view="settings">Settings</button>
+    </nav>
+    <button class="avatar avatar--topbar" id="btn-avatar" aria-label="Your profile" title="Profile">
+      <span id="avatar-initials">S</span>
+      <img id="avatar-picture" alt="" hidden>
+    </button>
+  </header>
+
+  <div id="app">
+
+    <!-- ============ VIEW: DASHBOARD ============ -->
+    <section id="view-dashboard" class="view is-active" aria-label="Dashboard">
+      <header class="head head--dashboard">
+        <div class="head__row">
+          <div>
+            <p class="head__eyebrow" id="greeting-line">Tuesday, October 24</p>
+            <h1 class="head__title" id="dashboard-greeting-title">CampusFlow</h1>
+          </div>
+        </div>
+      </header>
+
+      <main class="content">
+        <section class="stat-row" aria-label="Today's summary">
+          <div class="stat-card">
+            <span class="stat-card__num" id="stat-today">0</span>
+            <span class="stat-card__label">Today's<br>classes</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-card__num" id="stat-extra">0</span>
+            <span class="stat-card__label">Extra<br>sessions</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-card__num" id="stat-upcoming">0</span>
+            <span class="stat-card__label">Upcoming<br>this week</span>
+          </div>
+        </section>
+
+        <section class="panel" id="attendance-panel">
+          <div class="panel__title-row">
+            <h2 class="panel__title">Today's attendance</h2>
+          </div>
+          <div id="attendance-empty" class="attendance-empty" hidden>No classes scheduled today.</div>
+          <div class="attendance-wrap" id="attendance-wrap">
+            <div class="attendance-chart-holder">
+              <svg id="attendance-donut" viewBox="0 0 200 200" class="attendance-donut" aria-hidden="true"></svg>
+              <div class="attendance-center">
+                <span class="attendance-center__num" id="attendance-total-num">0</span>
+                <span class="attendance-center__label">attendance</span>
+              </div>
+              <div class="attendance-tooltip" id="attendance-tooltip" hidden></div>
+            </div>
+            <div class="attendance-legend" id="attendance-legend"></div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <h2 class="panel__title">Manage schedule</h2>
+          <div class="manage-row">
+            <button class="manage-btn" id="btn-add-regular">
+              <span class="manage-btn__icon manage-btn__icon--ink"><svg viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3.5" y="5" width="17" height="16" rx="2.5" />
+                  <path d="M8 3v4M16 3v4M3.5 10h17" />
+                </svg></span>
+              <span class="manage-btn__text">Add regular<br>class</span>
+              <span class="manage-btn__plus">+ Add</span>
+            </button>
+            <button class="manage-btn" id="btn-add-extra">
+              <span class="manage-btn__icon manage-btn__icon--emerald"><svg viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M13 3 4 14h6l-1 7 9-11h-6l1-7Z" />
+                </svg></span>
+              <span class="manage-btn__text">Add extra<br>session</span>
+              <span class="manage-btn__plus">+ Add</span>
+            </button>
+            <button class="manage-btn" id="btn-add-work">
+              <span class="manage-btn__icon manage-btn__icon--amber"><svg viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="5" y="4" width="14" height="17" rx="2" />
+                  <path d="M8.5 11.5l1.7 1.7L13.5 10" />
+                  <path d="M8.5 16.5h7" />
+                </svg></span>
+              <span class="manage-btn__text">Add<br>work</span>
+              <span class="manage-btn__plus">+ Add</span>
+            </button>
+          </div>
+        </section>
+
+        <section class="panel">
+          <h2 class="panel__title">Weekly overview</h2>
+          <div class="week-ribbon" id="week-ribbon"></div>
+        </section>
+
+        <section class="panel" id="dashboard-preview-panel">
+          <div class="panel__title-row">
+            <h2 class="panel__title">Rest of today</h2>
+            <button class="link-btn" id="btn-see-all-today">See all →</button>
+          </div>
+          <div id="dashboard-preview-list" class="preview-list"></div>
+        </section>
+
+        <section class="panel">
+          <div class="panel__title-row">
+            <h2 class="panel__title">Works due soon</h2>
+            <button class="link-btn" id="btn-see-all-works">See all →</button>
+          </div>
+          <div id="dashboard-works-preview" class="preview-list"></div>
+        </section>
+
+        <button class="events-banner" id="btn-dashboard-events">
+          <span class="events-banner__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3.5" y="5" width="17" height="16" rx="2.5" />
+              <path d="M8 3v4M16 3v4M3.5 10h17" />
+            </svg></span>
+          <span class="events-banner__text">
+            <strong>Campus Events</strong>
+            <span id="events-banner-sub">See what's happening around campus</span>
+          </span>
+          <span class="events-banner__arrow">→</span>
+        </button>
+      </main>
+    </section>
+
+    <!-- ============ VIEW: TODAY'S CLASSES ============ -->
+    <section id="view-classes" class="view" aria-label="Today's classes">
+      <header class="head head--classes">
+        <div class="head__row">
+          <div>
+            <h1 class="head__title">Today's Classes</h1>
+            <p class="head__eyebrow" id="classes-date-line">Wednesday, October 25th</p>
+          </div>
+          <button class="icon-btn" id="btn-jump-today" aria-label="Jump to today"><svg viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3.5" y="5" width="17" height="16" rx="2.5" />
+              <path d="M8 3v4M16 3v4M3.5 10h17" />
+            </svg></button>
+        </div>
+      </header>
+
+      <main class="content content--timeline">
+        <div id="timeline-empty" class="empty-state" hidden>
+          <div class="empty-state__mark">＋</div>
+          <p class="empty-state__title">Nothing scheduled today</p>
+          <p class="empty-state__body">Add a regular class or an extra session and it'll show up here, sorted by time.
+          </p>
+        </div>
+        <ol id="timeline-list" class="timeline-list"></ol>
+      </main>
+
+      <button class="fab" id="btn-fab-add" aria-label="Add a session">+</button>
+    </section>
+
+    <!-- ============ VIEW: WORKS ============ -->
+    <section id="view-works" class="view" aria-label="Works">
+      <header class="head head--works">
+        <div class="head__row">
+          <div>
+            <h1 class="head__title">Works</h1>
+            <p class="head__eyebrow" id="works-summary-line">Assignments &amp; lab work</p>
+          </div>
+          <button class="icon-btn icon-btn--static"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="5" y="4" width="14" height="17" rx="2" />
+              <path d="M9 4V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1" />
+              <path d="M8.5 11.5l1.7 1.7L13.5 10" />
+              <path d="M8.5 16.5h7" />
+            </svg></button>
+        </div>
+      </header>
+
+      <main class="content content--timeline">
+        <div id="works-empty" class="empty-state" hidden>
+          <div class="empty-state__mark">＋</div>
+          <p class="empty-state__title">No works added yet</p>
+          <p class="empty-state__body">Track assignments and lab work with due dates — they'll show up here.</p>
+        </div>
+        <ol id="works-list" class="timeline-list"></ol>
+      </main>
+
+      <button class="fab" id="btn-fab-add-work" aria-label="Add a work">+</button>
+    </section>
+
+    <!-- ============ VIEW: EVENTS ============ -->
+    <section id="view-events" class="view" aria-label="Events">
+      <header class="head head--events">
+        <div class="head__row">
+          <div>
+            <h1 class="head__title">Events</h1>
+            <p class="head__eyebrow">Happening across Brainware University</p>
+          </div>
+        </div>
+      </header>
+
+      <main class="content">
+        <div id="events-empty" class="empty-state" hidden>
+          <div class="empty-state__mark">🎪</div>
+          <p class="empty-state__title">No events published yet</p>
+          <p class="empty-state__body">Check back soon — campus events will show up here.</p>
+        </div>
+        <div id="events-list" class="events-list"></div>
+      </main>
+    </section>
+
+    <!-- ============ VIEW: SETTINGS ============ -->
+    <section id="view-settings" class="view" aria-label="Settings">
+      <header class="head head--settings">
+        <div class="head__row">
+          <h1 class="head__title">Settings</h1>
+          <span class="icon-btn icon-btn--static"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+              fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3" />
+              <path
+                d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+            </svg></span>
+        </div>
+      </header>
+
+      <main class="content">
+
+        <section class="panel">
+          <h2 class="panel__title">Profile</h2>
+          <div class="upload-row">
+            <div class="upload-row__label">
+              <span class="row-btn__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3.5" y="4.5" width="17" height="15" rx="2.3" />
+                  <circle cx="9" cy="10" r="1.6" />
+                  <path d="M4.5 16.5 9 12.5l3 2.6 3.5-3.6 4 4.4" />
+                </svg></span>
+              <span>Profile picture</span>
+            </div>
+            <div class="upload-row__actions" id="picture-actions"></div>
+            <input type="file" id="file-picture" accept="image/jpeg,image/png" hidden>
+          </div>
+          <div class="upload-row">
+            <div class="upload-row__label">
+              <span class="row-btn__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M7 3.5h7l4 4V20a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1Z" />
+                  <path d="M14 3.5V8h4" />
+                </svg></span>
+              <span>Student ID card</span>
+            </div>
+            <div class="upload-row__actions" id="idcard-actions"></div>
+            <input type="file" id="file-idcard" accept="application/pdf" hidden>
+          </div>
+        </section>
+
+        <section class="panel">
+          <h2 class="panel__title">Add classes from preset</h2>
+          <p class="panel__hint">Pick your class &amp; group to instantly fill in your regular classes — no manual entry
+            needed.</p>
+          <div class="preset-row">
+            <select class="select select--wide" id="select-preset">
+              <option value="">Select class &amp; group</option>
+              <option value="CSE-E1">CSE — Section E, Group E1</option>
+              <option value="CSE-E2">CSE — Section E, Group E2</option>
+            </select>
+            <button class="btn btn--primary" id="btn-apply-preset">Add</button>
+          </div>
+          <p class="panel__hint" id="preset-current-hint" style="margin-top:10px;margin-bottom:0;"></p>
+        </section>
+
+        <section class="panel">
+          <h2 class="panel__title">Notification controls</h2>
+          <div class="setting-row">
+            <div class="setting-row__text">
+              <span class="setting-row__label">Class notifications</span>
+              <span class="setting-row__sub">Alert 15 minutes before a session starts</span>
+            </div>
+            <button class="switch" id="toggle-notifications" role="switch" aria-checked="false"><span
+                class="switch__knob"></span></button>
+          </div>
+          <div class="setting-row">
+            <div class="setting-row__text">
+              <span class="setting-row__label">System vibration</span>
+              <span class="setting-row__sub">Buzz the device alongside the alert</span>
+            </div>
+            <button class="switch" id="toggle-vibration" role="switch" aria-checked="false"><span
+                class="switch__knob"></span></button>
+          </div>
+          <button class="setting-row setting-row--link" id="btn-sound">
+            <div class="setting-row__text">
+              <span class="setting-row__label">Notification sound</span>
+            </div>
+            <span class="setting-row__value" id="sound-value">Default ›</span>
+          </button>
+          <p class="notif-status" id="notif-status"></p>
+        </section>
+
+        <section class="panel">
+          <h2 class="panel__title">App preferences</h2>
+          <div class="setting-row">
+            <div class="setting-row__text">
+              <span class="setting-row__label">Dark mode</span>
+            </div>
+            <button class="switch" id="toggle-dark" role="switch" aria-checked="false"><span
+                class="switch__knob"></span></button>
+          </div>
+          <div class="setting-row">
+            <div class="setting-row__text">
+              <span class="setting-row__label">Default starting tab</span>
+            </div>
+            <select class="select" id="select-default-tab">
+              <option value="dashboard">Dashboard</option>
+              <option value="classes">Classes</option>
+              <option value="works">Works</option>
+            </select>
+          </div>
+        </section>
+
+        <section class="panel">
+          <h2 class="panel__title">Schedule management</h2>
+          <button class="row-btn" id="btn-manage-regular">
+            <span>Add / edit regular classes</span>
+            <span class="row-btn__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 20l.9-4.2L15.8 5 19 8.2 8.2 19 4 20Z" />
+                <path d="M13.5 6.5 17.5 10.5" />
+              </svg></span>
+          </button>
+          <button class="row-btn" id="btn-manage-extra">
+            <span>Add / edit extra sessions</span>
+            <span class="row-btn__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3.5" y="5" width="17" height="16" rx="2.5" />
+                <path d="M8 3v4M16 3v4M3.5 10h17" />
+              </svg></span>
+          </button>
+          <button class="row-btn" id="btn-manage-works">
+            <span>Add / edit works</span>
+            <span class="row-btn__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                stroke-linecap="round" stroke-linejoin="round">
+                <rect x="5" y="4" width="14" height="17" rx="2" />
+                <path d="M8.5 11.5l1.7 1.7L13.5 10" />
+                <path d="M8.5 16.5h7" />
+              </svg></span>
+          </button>
+          <button class="row-btn row-btn--danger" id="btn-clear-data">
+            <span>Clear local schedule data</span>
+            <span class="row-btn__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path
+                  d="M4.5 7h15M9.5 7V5a1.5 1.5 0 0 1 1.5-1.5h2A1.5 1.5 0 0 1 14.5 5v2M6.5 7l.8 12.2a2 2 0 0 0 2 1.8h5.4a2 2 0 0 0 2-1.8L17.5 7" />
+                <path d="M10.2 11v6M13.8 11v6" />
+              </svg></span>
+          </button>
+        </section>
+
+        <section class="panel">
+          <h2 class="panel__title">Data &amp; synchronization</h2>
+          <p class="panel__hint">Everything stays on this device. Use export/import to move your schedule to another
+            one.</p>
+          <button class="row-btn" id="btn-export">
+            <span>Export schedule data (JSON)</span>
+            <span class="row-btn__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 3.5v11.5M7.5 11l4.5 4.5L16.5 11" />
+                <path d="M4.5 17.5V19a1.5 1.5 0 0 0 1.5 1.5h12a1.5 1.5 0 0 0 1.5-1.5v-1.5" />
+              </svg></span>
+          </button>
+          <button class="row-btn" id="btn-import">
+            <span>Import schedule data (JSON)</span>
+            <span class="row-btn__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 15.5V4M7.5 8.5 12 4l4.5 4.5" />
+                <path d="M4.5 17.5V19a1.5 1.5 0 0 0 1.5 1.5h12a1.5 1.5 0 0 0 1.5-1.5v-1.5" />
+              </svg></span>
+          </button>
+          <input type="file" id="file-import" accept="application/json" hidden>
+        </section>
+
+        <section class="panel">
+          <h2 class="panel__title">More</h2>
+          <button class="row-btn" id="btn-view-events">
+            <span>View campus events</span>
+            <span class="row-btn__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 6l6 6-6 6" />
+              </svg></span>
+          </button>
+          <a class="row-btn" href="developer/" id="btn-view-developer">
+            <span>View developer page</span>
+            <span class="row-btn__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 6l6 6-6 6" />
+              </svg></span>
+          </a>
+        </section>
+
+        <section class="panel">
+          <h2 class="panel__title">About &amp; info</h2>
+          <div class="about-row"><span>Privacy policy</span><span class="about-row__val">Everything stays on-device
+              ›</span></div>
+          <div class="about-row"><span>Version</span><span class="about-row__val">v2.2.2</span></div>
+          <div class="about-row" id="storage-row"><span>Storage used</span><span class="about-row__val"
+              id="storage-used">—</span></div>
+        </section>
+      </main>
+    </section>
+
+    <!-- ============ BOTTOM NAV (mobile only) ============ -->
+    <nav class="bottom-nav" aria-label="Primary mobile">
+      <button class="nav-btn is-active" data-view="dashboard">
+        <span class="nav-btn__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 11.5 12 4l8 7.5" />
+            <path d="M6 10v9.5a1 1 0 0 0 1 1h3.5V15h3v5.5H17a1 1 0 0 0 1-1V10" />
+          </svg></span><span>Dashboard</span>
+      </button>
+      <button class="nav-btn" data-view="classes">
+        <span class="nav-btn__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+            stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3.5" y="4" width="17" height="5" rx="1.3" />
+            <rect x="3.5" y="14" width="17" height="5" rx="1.3" />
+            <path d="M7 6.5h.01M7 16.5h.01" />
+          </svg></span><span>Classes</span>
+      </button>
+      <button class="nav-btn" data-view="works">
+        <span class="nav-btn__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+            stroke-linecap="round" stroke-linejoin="round">
+            <rect x="5" y="4" width="14" height="17" rx="2" />
+            <path d="M8.5 11.5l1.7 1.7L13.5 10" />
+            <path d="M8.5 16.5h7" />
+          </svg></span><span>Works</span>
+      </button>
+      <button class="nav-btn" data-view="settings">
+        <span class="nav-btn__icon"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3" />
+            <path
+              d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+          </svg></span><span>Settings</span>
+      </button>
     </nav>
   </div>
-</div>
 
-<!-- ============ PROFILE PANEL (slide-out, right, from avatar) ============ -->
-<div class="side-panel side-panel--right" id="panel-profile">
-  <div class="side-panel__backdrop" data-close-panel="panel-profile"></div>
-  <div class="side-panel__sheet side-panel__sheet--right">
-    <div class="side-panel__head">
-      <span>Profile</span>
-      <button class="modal__close" data-close-panel="panel-profile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
-    </div>
-    <div class="side-panel__body">
-      <button class="row-btn" id="btn-open-edit-name">
-        <span>Edit Name</span>
-        <span class="row-btn__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l.9-4.2L15.8 5 19 8.2 8.2 19 4 20Z"/><path d="M13.5 6.5 17.5 10.5"/></svg></span>
-      </button>
-      <button class="row-btn" id="btn-open-id-card">
-        <span>View ID Card</span>
-        <span class="row-btn__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="11" r="2"/><path d="M5.5 16c.6-1.6 1.8-2.4 3-2.4s2.4.8 3 2.4"/><path d="M14 9.5h5M14 12.5h5M14 15.5h3.5"/></svg></span>
-      </button>
+  <!-- ============ DRAWER (hamburger slide-out, left, all sizes) ============ -->
+  <div class="side-panel side-panel--left" id="panel-drawer">
+    <div class="side-panel__backdrop" data-close-panel="panel-drawer"></div>
+    <div class="side-panel__sheet side-panel__sheet--left">
+      <div class="side-panel__head">
+        <span class="topbar__brand">CampusFlow</span>
+        <button class="modal__close" data-close-panel="panel-drawer"><svg viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="1.9" stroke-linecap="round">
+            <path d="M6 6l12 12M18 6 6 18" />
+          </svg></button>
+      </div>
+      <nav class="drawer-nav">
+        <button class="drawer-link" data-view="dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 11.5 12 4l8 7.5" />
+            <path d="M6 10v9.5a1 1 0 0 0 1 1h3.5V15h3v5.5H17a1 1 0 0 0 1-1V10" />
+          </svg><span>Dashboard</span></button>
+        <button class="drawer-link" data-view="classes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3.5" y="4" width="17" height="5" rx="1.3" />
+            <rect x="3.5" y="14" width="17" height="5" rx="1.3" />
+            <path d="M7 6.5h.01M7 16.5h.01" />
+          </svg><span>Classes</span></button>
+        <button class="drawer-link" data-view="works"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="5" y="4" width="14" height="17" rx="2" />
+            <path d="M8.5 11.5l1.7 1.7L13.5 10" />
+            <path d="M8.5 16.5h7" />
+          </svg><span>Works</span></button>
+        <button class="drawer-link" data-view="events"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3.5" y="5" width="17" height="16" rx="2.5" />
+            <path d="M8 3v4M16 3v4M3.5 10h17" />
+          </svg><span>Events</span></button>
+        <button class="drawer-link" data-view="settings"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3" />
+            <path
+              d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+          </svg><span>Settings</span></button>
+        <a class="drawer-link" href="developer/"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M8.5 7 3.5 12l5 5M15.5 7l5 5-5 5M13.5 4.5l-3 15" />
+          </svg><span>Developer</span></a>
+      </nav>
     </div>
   </div>
-</div>
 
-<!-- ============ MODAL: ADD/EDIT REGULAR CLASS ============ -->
-<div class="modal-backdrop" id="modal-regular">
-  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-regular-title">
-    <div class="modal__head">
-      <h2 id="modal-regular-title">Add regular class</h2>
-      <button class="modal__close" data-close-modal="modal-regular"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
-    </div>
-    <form id="form-regular" class="modal__body">
-      <input type="hidden" id="regular-id">
-      <label class="field">
-        <span class="field__label">Subject name</span>
-        <input class="field__input" id="regular-subject" type="text" placeholder="e.g. Data Structures (CS 201)" required>
-      </label>
-      <label class="field">
-        <span class="field__label">Professor</span>
-        <input class="field__input" id="regular-professor" type="text" placeholder="e.g. Prof. A. Sharma">
-      </label>
-      <div class="field-pair">
-        <label class="field">
-          <span class="field__label">Building</span>
-          <input class="field__input" id="regular-building" type="text" placeholder="Tech Block" required>
-        </label>
-        <label class="field">
-          <span class="field__label">Room</span>
-          <input class="field__input" id="regular-room" type="text" placeholder="301" required>
-        </label>
+  <!-- ============ PROFILE PANEL (slide-out, right, from avatar) ============ -->
+  <div class="side-panel side-panel--right" id="panel-profile">
+    <div class="side-panel__backdrop" data-close-panel="panel-profile"></div>
+    <div class="side-panel__sheet side-panel__sheet--right">
+      <div class="side-panel__head">
+        <span>Profile</span>
+        <button class="modal__close" data-close-panel="panel-profile"><svg viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="1.9" stroke-linecap="round">
+            <path d="M6 6l12 12M18 6 6 18" />
+          </svg></button>
       </div>
-      <div class="field-pair">
-        <label class="field">
-          <span class="field__label">Starts</span>
-          <input class="field__input" id="regular-start" type="time" required>
-        </label>
-        <label class="field">
-          <span class="field__label">Ends</span>
-          <input class="field__input" id="regular-end" type="time" required>
-        </label>
+      <div class="side-panel__body">
+        <button class="row-btn" id="btn-open-edit-name">
+          <span>Edit Name</span>
+          <span class="row-btn__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 20l.9-4.2L15.8 5 19 8.2 8.2 19 4 20Z" />
+              <path d="M13.5 6.5 17.5 10.5" />
+            </svg></span>
+        </button>
+        <button class="row-btn" id="btn-open-id-card">
+          <span>View ID Card</span>
+          <span class="row-btn__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+              stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="5" width="18" height="14" rx="2" />
+              <circle cx="8.5" cy="11" r="2" />
+              <path d="M5.5 16c.6-1.6 1.8-2.4 3-2.4s2.4.8 3 2.4" />
+              <path d="M14 9.5h5M14 12.5h5M14 15.5h3.5" />
+            </svg></span>
+        </button>
       </div>
-      <div class="field">
-        <span class="field__label">Repeats on</span>
-        <div class="day-picker" id="regular-days">
-          <button type="button" class="day-chip" data-day="1">M</button>
-          <button type="button" class="day-chip" data-day="2">T</button>
-          <button type="button" class="day-chip" data-day="3">W</button>
-          <button type="button" class="day-chip" data-day="4">Th</button>
-          <button type="button" class="day-chip" data-day="5">F</button>
-          <button type="button" class="day-chip" data-day="6">S</button>
-          <button type="button" class="day-chip" data-day="0">Su</button>
-        </div>
-      </div>
-      <div class="modal__actions">
-        <button type="button" class="btn btn--ghost btn--danger" id="btn-delete-regular" hidden>Delete</button>
-        <button type="submit" class="btn btn--primary">Save class</button>
-      </div>
-    </form>
-  </div>
-</div>
-
-<!-- ============ MODAL: ADD/EDIT EXTRA SESSION ============ -->
-<div class="modal-backdrop" id="modal-extra">
-  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-extra-title">
-    <div class="modal__head">
-      <h2 id="modal-extra-title">Add extra session</h2>
-      <button class="modal__close" data-close-modal="modal-extra"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
-    </div>
-    <form id="form-extra" class="modal__body">
-      <input type="hidden" id="extra-id">
-      <label class="field">
-        <span class="field__label">Subject name</span>
-        <input class="field__input" id="extra-subject" type="text" placeholder="e.g. Makeup Lecture — Thermodynamics" required>
-      </label>
-      <label class="field">
-        <span class="field__label">Professor</span>
-        <input class="field__input" id="extra-professor" type="text" placeholder="e.g. Prof. R. Khan">
-      </label>
-      <div class="field-pair">
-        <label class="field">
-          <span class="field__label">Building</span>
-          <input class="field__input" id="extra-building" type="text" placeholder="Main Hall" required>
-        </label>
-        <label class="field">
-          <span class="field__label">Room</span>
-          <input class="field__input" id="extra-room" type="text" placeholder="105" required>
-        </label>
-      </div>
-      <label class="field">
-        <span class="field__label">Date</span>
-        <input class="field__input" id="extra-date" type="date" required>
-      </label>
-      <div class="field-pair">
-        <label class="field">
-          <span class="field__label">Starts</span>
-          <input class="field__input" id="extra-start" type="time" required>
-        </label>
-        <label class="field">
-          <span class="field__label">Ends</span>
-          <input class="field__input" id="extra-end" type="time" required>
-        </label>
-      </div>
-      <div class="modal__actions">
-        <button type="button" class="btn btn--ghost btn--danger" id="btn-delete-extra" hidden>Delete</button>
-        <button type="submit" class="btn btn--primary">Save session</button>
-      </div>
-    </form>
-  </div>
-</div>
-
-<!-- ============ MODAL: ADD/EDIT WORK ============ -->
-<div class="modal-backdrop" id="modal-work">
-  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-work-title">
-    <div class="modal__head">
-      <h2 id="modal-work-title">Add work</h2>
-      <button class="modal__close" data-close-modal="modal-work"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
-    </div>
-    <form id="form-work" class="modal__body">
-      <input type="hidden" id="work-id">
-      <label class="field">
-        <span class="field__label">Subject</span>
-        <input class="field__input" id="work-subject" type="text" placeholder="e.g. Engineering Chemistry" required>
-      </label>
-      <div class="field">
-        <span class="field__label">Type</span>
-        <div class="radio-row">
-          <label class="radio-chip"><input type="radio" name="work-type" value="assignment" checked><span>Assignment</span></label>
-          <label class="radio-chip"><input type="radio" name="work-type" value="lab"><span>Lab Work</span></label>
-        </div>
-      </div>
-      <label class="field">
-        <span class="field__label">Last date for submission</span>
-        <input class="field__input" id="work-duedate" type="date" required>
-      </label>
-      <div class="modal__actions">
-        <button type="button" class="btn btn--ghost btn--danger" id="btn-delete-work" hidden>Delete</button>
-        <button type="submit" class="btn btn--primary">Save work</button>
-      </div>
-    </form>
-  </div>
-</div>
-
-<!-- ============ MODAL: MANAGE LIST (regular / extra / works) ============ -->
-<div class="modal-backdrop" id="modal-manage">
-  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-manage-title">
-    <div class="modal__head">
-      <h2 id="modal-manage-title">Regular classes</h2>
-      <button class="modal__close" data-close-modal="modal-manage"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
-    </div>
-    <div class="modal__body">
-      <div id="manage-list" class="manage-list"></div>
-      <button class="btn btn--primary btn--block" id="btn-manage-add-new">+ Add new</button>
     </div>
   </div>
-</div>
 
-<!-- ============ MODAL: NAME PROMPT ============ -->
-<div class="modal-backdrop" id="modal-name">
-  <div class="modal modal--small" role="dialog" aria-modal="true" aria-labelledby="modal-name-title">
-    <div class="modal__head">
-      <h2 id="modal-name-title">Edit name</h2>
-      <button class="modal__close" data-close-modal="modal-name"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
-    </div>
-    <form id="form-name" class="modal__body">
-      <label class="field">
-        <span class="field__label">First name</span>
-        <input class="field__input" id="name-input" type="text" placeholder="John" maxlength="20">
-      </label>
-      <label class="field">
-        <span class="field__label">Full name <em>(optional)</em></span>
-        <input class="field__input" id="fullname-input" type="text" placeholder="John Robert Smith" maxlength="60">
-      </label>
-      <div class="modal__actions">
-        <button type="submit" class="btn btn--primary">Save</button>
+  <!-- ============ MODAL: ADD/EDIT REGULAR CLASS ============ -->
+  <div class="modal-backdrop" id="modal-regular">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-regular-title">
+      <div class="modal__head">
+        <h2 id="modal-regular-title">Add regular class</h2>
+        <button class="modal__close" data-close-modal="modal-regular"><svg viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="1.9" stroke-linecap="round">
+            <path d="M6 6l12 12M18 6 6 18" />
+          </svg></button>
       </div>
-    </form>
-  </div>
-</div>
-
-<!-- ============ MODAL: ID CARD COORDINATE MAPPING ============ -->
-<div class="modal-backdrop" id="modal-idcard-map">
-  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-idcard-map-title">
-    <div class="modal__head">
-      <h2 id="modal-idcard-map-title">Map your ID card</h2>
-      <button class="modal__close" data-close-modal="modal-idcard-map"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
-    </div>
-    <div class="modal__body">
-      <p class="panel__hint">Your PDF should have the front &amp; back of your ID side-by-side on one page. Adjust the boxes below (as % of the page) so they line up with each side — the preview updates live. Defaults are pre-filled for the standard BWU layout.</p>
-      <div class="idmap-preview">
-        <canvas id="idmap-canvas"></canvas>
-      </div>
-      <button type="button" class="btn btn--ghost btn--block" id="btn-idcard-replace">Upload a different file</button>
-      <div class="idmap-fields">
-        <p class="idmap-fields__title">Front side box</p>
+      <form id="form-regular" class="modal__body">
+        <input type="hidden" id="regular-id">
+        <label class="field">
+          <span class="field__label">Subject name</span>
+          <input class="field__input" id="regular-subject" type="text" placeholder="e.g. Data Structures (CS 201)"
+            required>
+        </label>
+        <label class="field">
+          <span class="field__label">Professor</span>
+          <input class="field__input" id="regular-professor" type="text" placeholder="e.g. Prof. A. Sharma">
+        </label>
         <div class="field-pair">
-          <label class="field"><span class="field__label">X %</span><input class="field__input" type="number" id="front-x" min="0" max="100" step="0.5"></label>
-          <label class="field"><span class="field__label">Y %</span><input class="field__input" type="number" id="front-y" min="0" max="100" step="0.5"></label>
+          <label class="field">
+            <span class="field__label">Building</span>
+            <input class="field__input" id="regular-building" type="text" placeholder="Tech Block" required>
+          </label>
+          <label class="field">
+            <span class="field__label">Room</span>
+            <input class="field__input" id="regular-room" type="text" placeholder="301" required>
+          </label>
         </div>
         <div class="field-pair">
-          <label class="field"><span class="field__label">Width %</span><input class="field__input" type="number" id="front-w" min="1" max="100" step="0.5"></label>
-          <label class="field"><span class="field__label">Height %</span><input class="field__input" type="number" id="front-h" min="1" max="100" step="0.5"></label>
+          <label class="field">
+            <span class="field__label">Starts</span>
+            <input class="field__input" id="regular-start" type="time" required>
+          </label>
+          <label class="field">
+            <span class="field__label">Ends</span>
+            <input class="field__input" id="regular-end" type="time" required>
+          </label>
         </div>
+        <div class="field">
+          <span class="field__label">Repeats on</span>
+          <div class="day-picker" id="regular-days">
+            <button type="button" class="day-chip" data-day="1">M</button>
+            <button type="button" class="day-chip" data-day="2">T</button>
+            <button type="button" class="day-chip" data-day="3">W</button>
+            <button type="button" class="day-chip" data-day="4">Th</button>
+            <button type="button" class="day-chip" data-day="5">F</button>
+            <button type="button" class="day-chip" data-day="6">S</button>
+            <button type="button" class="day-chip" data-day="0">Su</button>
+          </div>
+        </div>
+        <div class="modal__actions">
+          <button type="button" class="btn btn--ghost btn--danger" id="btn-delete-regular" hidden>Delete</button>
+          <button type="submit" class="btn btn--primary">Save class</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============ MODAL: ADD/EDIT EXTRA SESSION ============ -->
+  <div class="modal-backdrop" id="modal-extra">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-extra-title">
+      <div class="modal__head">
+        <h2 id="modal-extra-title">Add extra session</h2>
+        <button class="modal__close" data-close-modal="modal-extra"><svg viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="1.9" stroke-linecap="round">
+            <path d="M6 6l12 12M18 6 6 18" />
+          </svg></button>
       </div>
-      <div class="idmap-fields">
-        <p class="idmap-fields__title">Back side box</p>
+      <form id="form-extra" class="modal__body">
+        <input type="hidden" id="extra-id">
+        <label class="field">
+          <span class="field__label">Subject name</span>
+          <input class="field__input" id="extra-subject" type="text" placeholder="e.g. Makeup Lecture — Thermodynamics"
+            required>
+        </label>
+        <label class="field">
+          <span class="field__label">Professor</span>
+          <input class="field__input" id="extra-professor" type="text" placeholder="e.g. Prof. R. Khan">
+        </label>
         <div class="field-pair">
-          <label class="field"><span class="field__label">X %</span><input class="field__input" type="number" id="back-x" min="0" max="100" step="0.5"></label>
-          <label class="field"><span class="field__label">Y %</span><input class="field__input" type="number" id="back-y" min="0" max="100" step="0.5"></label>
+          <label class="field">
+            <span class="field__label">Building</span>
+            <input class="field__input" id="extra-building" type="text" placeholder="Main Hall" required>
+          </label>
+          <label class="field">
+            <span class="field__label">Room</span>
+            <input class="field__input" id="extra-room" type="text" placeholder="105" required>
+          </label>
         </div>
+        <label class="field">
+          <span class="field__label">Date</span>
+          <input class="field__input" id="extra-date" type="date" required>
+        </label>
         <div class="field-pair">
-          <label class="field"><span class="field__label">Width %</span><input class="field__input" type="number" id="back-w" min="1" max="100" step="0.5"></label>
-          <label class="field"><span class="field__label">Height %</span><input class="field__input" type="number" id="back-h" min="1" max="100" step="0.5"></label>
+          <label class="field">
+            <span class="field__label">Starts</span>
+            <input class="field__input" id="extra-start" type="time" required>
+          </label>
+          <label class="field">
+            <span class="field__label">Ends</span>
+            <input class="field__input" id="extra-end" type="time" required>
+          </label>
+        </div>
+        <div class="modal__actions">
+          <button type="button" class="btn btn--ghost btn--danger" id="btn-delete-extra" hidden>Delete</button>
+          <button type="submit" class="btn btn--primary">Save session</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============ MODAL: ADD/EDIT WORK ============ -->
+  <div class="modal-backdrop" id="modal-work">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-work-title">
+      <div class="modal__head">
+        <h2 id="modal-work-title">Add work</h2>
+        <button class="modal__close" data-close-modal="modal-work"><svg viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="1.9" stroke-linecap="round">
+            <path d="M6 6l12 12M18 6 6 18" />
+          </svg></button>
+      </div>
+      <form id="form-work" class="modal__body">
+        <input type="hidden" id="work-id">
+        <label class="field">
+          <span class="field__label">Subject</span>
+          <input class="field__input" id="work-subject" type="text" placeholder="e.g. Engineering Chemistry" required>
+        </label>
+        <div class="field">
+          <span class="field__label">Type</span>
+          <div class="radio-row">
+            <label class="radio-chip"><input type="radio" name="work-type" value="assignment"
+                checked><span>Assignment</span></label>
+            <label class="radio-chip"><input type="radio" name="work-type" value="lab"><span>Lab Work</span></label>
+          </div>
+        </div>
+        <label class="field">
+          <span class="field__label">Last date for submission</span>
+          <input class="field__input" id="work-duedate" type="date" required>
+        </label>
+        <div class="modal__actions">
+          <button type="button" class="btn btn--ghost btn--danger" id="btn-delete-work" hidden>Delete</button>
+          <button type="submit" class="btn btn--primary">Save work</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============ MODAL: MANAGE LIST (regular / extra / works) ============ -->
+  <div class="modal-backdrop" id="modal-manage">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-manage-title">
+      <div class="modal__head">
+        <h2 id="modal-manage-title">Regular classes</h2>
+        <button class="modal__close" data-close-modal="modal-manage"><svg viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="1.9" stroke-linecap="round">
+            <path d="M6 6l12 12M18 6 6 18" />
+          </svg></button>
+      </div>
+      <div class="modal__body">
+        <div id="manage-list" class="manage-list"></div>
+        <button class="btn btn--primary btn--block" id="btn-manage-add-new">+ Add new</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ MODAL: NAME PROMPT ============ -->
+  <div class="modal-backdrop" id="modal-name">
+    <div class="modal modal--small" role="dialog" aria-modal="true" aria-labelledby="modal-name-title">
+      <div class="modal__head">
+        <h2 id="modal-name-title">Edit name</h2>
+        <button class="modal__close" data-close-modal="modal-name"><svg viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="1.9" stroke-linecap="round">
+            <path d="M6 6l12 12M18 6 6 18" />
+          </svg></button>
+      </div>
+      <form id="form-name" class="modal__body">
+        <label class="field">
+          <span class="field__label">First name</span>
+          <input class="field__input" id="name-input" type="text" placeholder="John" maxlength="20">
+        </label>
+        <label class="field">
+          <span class="field__label">Full name <em>(optional)</em></span>
+          <input class="field__input" id="fullname-input" type="text" placeholder="John Robert Smith" maxlength="60">
+        </label>
+        <div class="modal__actions">
+          <button type="submit" class="btn btn--primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============ MODAL: ID CARD COORDINATE MAPPING ============ -->
+  <div class="modal-backdrop" id="modal-idcard-map">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-idcard-map-title">
+      <div class="modal__head">
+        <h2 id="modal-idcard-map-title">Map your ID card</h2>
+        <button class="modal__close" data-close-modal="modal-idcard-map"><svg viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="1.9" stroke-linecap="round">
+            <path d="M6 6l12 12M18 6 6 18" />
+          </svg></button>
+      </div>
+      <div class="modal__body">
+        <p class="panel__hint">Your PDF should have the front &amp; back of your ID side-by-side on one page. Adjust the
+          boxes below (as % of the page) so they line up with each side — the preview updates live. Defaults are
+          pre-filled for the standard BWU layout.</p>
+        <div class="idmap-preview">
+          <canvas id="idmap-canvas"></canvas>
+        </div>
+        <button type="button" class="btn btn--ghost btn--block" id="btn-idcard-replace">Upload a different file</button>
+        <div class="idmap-fields">
+          <p class="idmap-fields__title">Front side box</p>
+          <div class="field-pair">
+            <label class="field"><span class="field__label">X %</span><input class="field__input" type="number"
+                id="front-x" min="0" max="100" step="0.5"></label>
+            <label class="field"><span class="field__label">Y %</span><input class="field__input" type="number"
+                id="front-y" min="0" max="100" step="0.5"></label>
+          </div>
+          <div class="field-pair">
+            <label class="field"><span class="field__label">Width %</span><input class="field__input" type="number"
+                id="front-w" min="1" max="100" step="0.5"></label>
+            <label class="field"><span class="field__label">Height %</span><input class="field__input" type="number"
+                id="front-h" min="1" max="100" step="0.5"></label>
+          </div>
+        </div>
+        <div class="idmap-fields">
+          <p class="idmap-fields__title">Back side box</p>
+          <div class="field-pair">
+            <label class="field"><span class="field__label">X %</span><input class="field__input" type="number"
+                id="back-x" min="0" max="100" step="0.5"></label>
+            <label class="field"><span class="field__label">Y %</span><input class="field__input" type="number"
+                id="back-y" min="0" max="100" step="0.5"></label>
+          </div>
+          <div class="field-pair">
+            <label class="field"><span class="field__label">Width %</span><input class="field__input" type="number"
+                id="back-w" min="1" max="100" step="0.5"></label>
+            <label class="field"><span class="field__label">Height %</span><input class="field__input" type="number"
+                id="back-h" min="1" max="100" step="0.5"></label>
+          </div>
+        </div>
+        <div class="modal__actions">
+          <button type="button" class="btn btn--primary btn--block" id="btn-idcard-save-map">Save ID card</button>
         </div>
       </div>
-      <div class="modal__actions">
-        <button type="button" class="btn btn--primary btn--block" id="btn-idcard-save-map">Save ID card</button>
+    </div>
+  </div>
+
+  <!-- ============ ID CARD VIEWER (full-screen overlay) ============ -->
+  <div class="idcard-viewer" id="idcard-viewer">
+    <div class="idcard-viewer__stage">
+      <canvas id="idcard-render-canvas" class="idcard-viewer__canvas"></canvas>
+      <div class="idcard-viewer__actions">
+        <button class="neon-btn" id="btn-idcard-flip">Flip</button>
+        <button class="neon-btn" id="btn-idcard-close">Close</button>
       </div>
     </div>
   </div>
-</div>
 
-<!-- ============ ID CARD VIEWER (full-screen overlay) ============ -->
-<div class="idcard-viewer" id="idcard-viewer">
-  <div class="idcard-viewer__stage">
-    <canvas id="idcard-render-canvas" class="idcard-viewer__canvas"></canvas>
-    <div class="idcard-viewer__actions">
-      <button class="neon-btn" id="btn-idcard-flip">Flip</button>
-      <button class="neon-btn" id="btn-idcard-close">Close</button>
-    </div>
-  </div>
-</div>
-
-<!-- ============ CONFIRM DIALOG ============ -->
-<div class="modal-backdrop" id="modal-confirm">
-  <div class="modal modal--small" role="alertdialog" aria-modal="true">
-    <div class="modal__body">
-      <p class="confirm__title" id="confirm-title">Are you sure?</p>
-      <p class="confirm__body" id="confirm-body"></p>
-      <div class="modal__actions">
-        <button class="btn btn--ghost" id="confirm-cancel">Cancel</button>
-        <button class="btn btn--danger" id="confirm-ok">Confirm</button>
+  <!-- ============ CONFIRM DIALOG ============ -->
+  <div class="modal-backdrop" id="modal-confirm">
+    <div class="modal modal--small" role="alertdialog" aria-modal="true">
+      <div class="modal__body">
+        <p class="confirm__title" id="confirm-title">Are you sure?</p>
+        <p class="confirm__body" id="confirm-body"></p>
+        <div class="modal__actions">
+          <button class="btn btn--ghost" id="confirm-cancel">Cancel</button>
+          <button class="btn btn--danger" id="confirm-ok">Confirm</button>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-<div class="toast" id="toast"></div>
+  <div class="toast" id="toast"></div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" crossorigin="anonymous"></script>
-<script src="events-data.js"></script>
-<script src="app.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" crossorigin="anonymous"></script>
+  <script src="events-data.js"></script>
+  <script src="presets-data.js"></script>
+  <script src="app.js"></script>
 </body>
+
 </html>

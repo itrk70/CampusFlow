@@ -9,13 +9,13 @@ index.html            Main app shell (Dashboard, Classes, Works, Events, Setting
 style.css             All styling — design tokens, layout, dark mode, animations
 app.js                All logic — storage, status engine, notifications, ID card, etc.
 events-data.js        Admin-edited list of campus events (see below)
+presets-data.js       Admin-edited class/group presets (see below)
 developer/index.html  Standalone "About the developer" page at /developer/
 assets/
   id-card-mockup.png  Blank lanyard-card mockup used to render the digital ID
-presets/
-  CSE-E1.json          Pre-built regular-class schedule for CSE Section E, Group E1
-  CSE-E2.json          Pre-built regular-class schedule for CSE Section E, Group E2
 ```
+
+`events-data.js` and `presets-data.js` embed their data directly as JS objects (assigned onto `window`) rather than being fetched as separate `.json` files. This is deliberate: `fetch()` of local JSON files is blocked by the browser under `file://` (i.e. double-clicking `index.html` instead of serving it), which is the most common way people first test a static site. Embedding the data sidesteps that entirely and works identically whether you're testing locally or live on GitHub Pages.
 
 No build step, no npm install, no bundler. Everything is plain HTML/CSS/JS plus two CDN scripts (Google Fonts, pdf.js) and the FontAwesome kit script for the developer page's icons.
 
@@ -23,8 +23,8 @@ No build step, no npm install, no bundler. Everything is plain HTML/CSS/JS plus 
 
 1. **Developer page** (`developer/index.html`): replace the placeholder name, bio, avatar image, and the LinkedIn/GitHub URLs with your own. The avatar is currently an inline placeholder silhouette — swap the `src` for a real photo (a data URL, or a hosted image).
 2. **FontAwesome kit**: both `index.html` and `developer/index.html` load `https://kit.fontawesome.com/826e39b053.js` — this is the kit ID you provided. If you rotate or replace your kit, update it in both files.
-3. **Events**: `events-data.js` ships with an empty, commented-out sample. Add real events by copying the sample object's shape into the `CAMPUSFLOW_EVENTS` array (see the field guide in that file's comments).
-4. **Class presets**: `presets/CSE-E1.json` and `presets/CSE-E2.json` are wired into Settings → "Add classes from preset". To add more sections, drop a new JSON file (same shape) into `presets/` and add a matching `<option>` in the `#select-preset` dropdown in `index.html`.
+3. **Events**: `events-data.js` ships with `CAMPUSFLOW_EVENTS` empty, plus a ready-to-copy sample event sitting just below it, disabled inside a comment block. Follow the instructions at the top of that file — it's a single comment toggle, not a line-by-line uncomment, so it's hard to get wrong.
+4. **Class presets**: `presets-data.js` ships with `CSE-E1` and `CSE-E2` wired into Settings → "Add classes from preset". To add more sections, add a new key to the `CAMPUSFLOW_PRESETS` object in that file (same shape as the existing two) and a matching `<option>` in the `#select-preset` dropdown in `index.html`.
 
 ## Run it locally
 

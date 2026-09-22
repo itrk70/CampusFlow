@@ -22,6 +22,7 @@ function defaultState(){
     extraSessions: [],    // {id, subject, professor, building, room, date:"YYYY-MM-DD", start, end}
     works: [],             // {id, subject, type:'assignment'|'lab', dueDate:'YYYY-MM-DD', completed:bool}
     completed: {},        // key `${classId}__${YYYY-MM-DD}` -> true
+    activePreset: null,   // e.g. "CSE-E1" — which preset's classes are currently auto-applied (null = none / manual only)
     settings: {
       notifications: false,
       vibration: false,
@@ -219,7 +220,7 @@ function renderDashboardWorksPreview(){
   const list = document.getElementById('dashboard-works-preview');
   if(!list) return;
   const upcoming = state.works
-    .filter(w => computeWorkStatus(w, now) !== 'completed')
+    .filter(w => computeWorkStatus(w, now) !== 'done')
     .sort((a,b) => a.dueDate.localeCompare(b.dueDate))
     .slice(0,3);
 
@@ -415,10 +416,10 @@ function renderDashboardStatsQuiet(){
 // RENDER: WORKS
 // =========================================================
 function computeWorkStatus(work, now){
-  if(work.completed) return 'completed';
+  if(work.completed) return 'done';
   const todayISOStr = todayISO(now);
-  if(work.dueDate < todayISOStr) return 'missed';
-  return 'ongoing';
+  if(work.dueDate < todayISOStr) return 'overdue'; // due date has fully passed (past midnight of that day)
+  return 'pending'; // not yet due, or due today but the day hasn't ended yet
 }
 
 function renderWorks(){
@@ -428,9 +429,9 @@ function renderWorks(){
   if(!list) return;
 
   const works = [...state.works].sort((a,b) => a.dueDate.localeCompare(b.dueDate));
-  const ongoingCount = works.filter(w => computeWorkStatus(w, now) === 'ongoing').length;
+  const pendingCount = works.filter(w => computeWorkStatus(w, now) === 'pending').length;
   document.getElementById('works-summary-line').textContent =
-    works.length === 0 ? 'Assignments & lab work' : `${ongoingCount} ongoing · ${works.length} total`;
+    works.length === 0 ? 'Assignments & lab work' : `${pendingCount} not completed · ${works.length} total`;
 
   if(works.length === 0){
     list.innerHTML = '';
@@ -440,18 +441,16 @@ function renderWorks(){
   empty.hidden = true;
 
   list.innerHTML = works.map(w => {
-    const status = computeWorkStatus(w, now);
-    const checked = status === 'completed';
-    const pillStatus = status === 'ongoing' ? 'upcoming' : status; // reuse amber for "ongoing/pending"
-    const pillClass = status === 'completed' ? ' status-pill--positive' : '';
-    const pillLabel = status === 'ongoing' ? 'Ongoing' : (status === 'missed' ? 'Missed' : 'Completed');
+    const status = computeWorkStatus(w, now); // 'pending' | 'overdue' | 'done'
+    const checked = status === 'done';
+    const pillLabel = status === 'done' ? 'Completed' : 'Not Completed';
     return `
       <li class="timeline-card work-card" data-status="${status}" data-work-id="${w.id}">
         <div class="timeline-card__top">
           <div>
             <div class="timeline-card__subject">${escapeHtml(w.subject)}<span class="type-chip">${w.type === 'lab' ? 'Lab Work' : 'Assignment'}</span></div>
           </div>
-          <span class="status-pill${pillClass}" data-status="${pillStatus}">${pillLabel}</span>
+          <span class="status-pill" data-status="${status}">${pillLabel}</span>
         </div>
         <div class="timeline-card__meta">Due ${formatDateLong(new Date(w.dueDate + 'T00:00:00'))}</div>
         <div class="timeline-card__foot">
@@ -541,18 +540,32 @@ document.getElementById('btn-see-all-works').addEventListener('click', () => swi
 // =========================================================
 // RENDER: EVENTS
 // =========================================================
+function getEventEndDate(ev){
+  if(ev.endTime){
+    return new Date(`${ev.date}T${ev.endTime}:00`);
+  }
+  const endDT = new Date(`${ev.date}T00:00:00`);
+  endDT.setDate(endDT.getDate() + 1); // no end time given -> treated as ending at midnight that night
+  return endDT;
+}
+
 function eventStatus(ev, now){
   const startDT = new Date(`${ev.date}T${ev.startTime}:00`);
-  let endDT;
-  if(ev.endTime){
-    endDT = new Date(`${ev.date}T${ev.endTime}:00`);
-  } else {
-    endDT = new Date(`${ev.date}T00:00:00`);
-    endDT.setDate(endDT.getDate() + 1); // no end time given -> treated as ending at midnight that night
-  }
+  const endDT = getEventEndDate(ev);
   if(now < startDT) return 'Upcoming';
   if(now >= startDT && now < endDT) return 'Ongoing';
   return 'Closed';
+}
+
+// events auto-drop from the visible list 10 days after their end date/time —
+// events-data.js is a static admin file the app can't write back to, so
+// "deleting" here means filtering it out of what's rendered, not editing the file
+const EVENT_EXPIRY_DAYS = 10;
+function isEventExpired(ev, now){
+  const endDT = getEventEndDate(ev);
+  const cutoff = new Date(endDT);
+  cutoff.setDate(cutoff.getDate() + EVENT_EXPIRY_DAYS);
+  return now >= cutoff;
 }
 
 function renderEvents(){
@@ -562,6 +575,7 @@ function renderEvents(){
   if(!list) return;
 
   const events = (window.CAMPUSFLOW_EVENTS || []).slice()
+    .filter(ev => !isEventExpired(ev, now))
     .sort((a,b) => (a.date + a.startTime).localeCompare(b.date + b.startTime));
 
   const bannerSub = document.getElementById('events-banner-sub');
@@ -909,6 +923,7 @@ document.getElementById('btn-see-all-today').addEventListener('click', () => {
 // dashboard quick-add
 document.getElementById('btn-add-regular').addEventListener('click', () => openRegularModal(null));
 document.getElementById('btn-add-extra').addEventListener('click', () => openExtraModal(null));
+document.getElementById('btn-add-work').addEventListener('click', () => openWorkModal(null));
 document.getElementById('btn-fab-add').addEventListener('click', () => openExtraModal(null));
 
 // settings management entries
@@ -931,6 +946,10 @@ function renderSettings(){
   document.getElementById('select-default-tab').value = state.settings.defaultTab;
   document.getElementById('sound-value').textContent = state.settings.sound + ' ›';
   document.getElementById('select-preset').value = '';
+  const presetHint = document.getElementById('preset-current-hint');
+  presetHint.textContent = state.activePreset
+    ? `Currently applied: ${state.activePreset}. Picking a different one will replace it.`
+    : 'No preset applied yet — pick one above to auto-fill your regular classes.';
   updateNotifStatusLine();
   updateStorageUsedLabel();
   renderPictureSettingsRow();
@@ -1014,28 +1033,35 @@ function applyTheme(){
 // =========================================================
 // PRESET CLASS IMPORT (Settings → Add classes from preset)
 // =========================================================
-document.getElementById('btn-apply-preset').addEventListener('click', async () => {
+document.getElementById('btn-apply-preset').addEventListener('click', () => {
   const val = document.getElementById('select-preset').value;
   if(!val){ showToast('Pick a class & group first'); return; }
-  try{
-    const res = await fetch(`presets/${val}.json`);
-    if(!res.ok) throw new Error('preset not found');
-    const data = await res.json();
-    if(!Array.isArray(data.regularClasses)) throw new Error('bad preset format');
-    confirmDialog(
-      `Add ${val} classes?`,
-      `This adds ${data.regularClasses.length} regular class(es) for ${val} to your schedule. You can edit or remove any of them afterward.`,
-      () => {
-        data.regularClasses.forEach(c => state.regularClasses.push({ ...c, id: uid() }));
-        saveState();
-        refreshAllViews();
-        showToast(`${val} classes added`);
-      }
-    );
-  }catch(err){
-    console.error(err);
-    showToast('Could not load that preset');
+  const presets = window.CAMPUSFLOW_PRESETS || {};
+  const data = presets[val];
+  if(!data || !Array.isArray(data.regularClasses)){
+    showToast('That preset isn\'t available yet');
+    return;
   }
+  const previousPreset = state.activePreset;
+  const previousCount = previousPreset ? state.regularClasses.filter(c => c._presetTag === previousPreset).length : 0;
+  const isSamePreset = previousPreset === val;
+
+  const message = previousPreset && !isSamePreset
+    ? `This removes your ${previousCount} previously auto-added ${previousPreset} class(es) and adds ${data.regularClasses.length} for ${val} instead. Any classes, works, or sessions you added yourself are left untouched.`
+    : (previousPreset && isSamePreset
+      ? `${val} is already applied. This will refresh it — removing the ${previousCount} existing ${val} class(es) and re-adding ${data.regularClasses.length} fresh ones.`
+      : `This adds ${data.regularClasses.length} regular class(es) for ${val} to your schedule. You can edit or remove any of them afterward.`);
+
+  confirmDialog(`Add ${val} classes?`, message, () => {
+    if(previousPreset){
+      state.regularClasses = state.regularClasses.filter(c => c._presetTag !== previousPreset);
+    }
+    data.regularClasses.forEach(c => state.regularClasses.push({ ...c, id: uid(), _presetTag: val }));
+    state.activePreset = val;
+    saveState();
+    refreshAllViews();
+    showToast(`${val} classes added`);
+  });
 });
 
 // =========================================================
@@ -1419,6 +1445,11 @@ document.getElementById('btn-idcard-close').addEventListener('click', () => {
 // DYNAMIC STATE ENGINE + NOTIFICATIONS (polling loop)
 // =========================================================
 function tick(){
+  const nowISO = todayISO();
+  if(lastPruneDay !== null && nowISO !== lastPruneDay){
+    lastPruneDay = nowISO;
+    if(pruneOldWorks()) saveState();
+  }
   if(document.getElementById('view-classes').classList.contains('is-active')) renderTimeline();
   if(document.getElementById('view-dashboard').classList.contains('is-active')) renderDashboard();
   if(document.getElementById('view-works').classList.contains('is-active')) renderWorks();
@@ -1467,6 +1498,15 @@ function pruneNotifiedKeys(){
   });
 }
 
+// auto-remove works whose due date is more than 7 days in the past, completed or not
+function pruneOldWorks(){
+  const cutoff = new Date(); cutoff.setDate(cutoff.getDate()-7);
+  const cutoffISO = todayISO(cutoff);
+  const before = state.works.length;
+  state.works = state.works.filter(w => w.dueDate >= cutoffISO);
+  return state.works.length !== before;
+}
+
 // =========================================================
 // INIT
 // =========================================================
@@ -1486,9 +1526,13 @@ function getInitialView(){
   return 'dashboard';
 }
 
+let lastPruneDay = null;
+
 function init(){
   applyTheme();
   pruneNotifiedKeys();
+  pruneOldWorks();
+  lastPruneDay = todayISO();
   saveState();
   renderAvatar();
 

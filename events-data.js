@@ -23,27 +23,49 @@
    - "Upcoming"  → before the event starts
    - "Ongoing"   → between start and end time, on the day
    - "Closed"    → after the event's end time has passed
+
+   AUTO-EXPIRY: an event quietly drops off the Events page on its
+   own 10 days after its end date/time — you don't need to come
+   back and delete old entries yourself. It still physically stays
+   in this file until you remove it; the app just stops showing it.
    ========================================================= */
 
-const CAMPUSFLOW_EVENTS = [
-  {
-    name: "THE INNER FIGHT: From Fear to Confidence",
-    date: "2026-09-19",
-    startTime: "14:00",
-    endTime: "16:00",
-    venue: "UB-II, Auditorium",
-    description: "A full day of project showcases, guest talks, and workshops from student clubs across departments. Open to all years — drop by any time.",
-    image: "https://example.com/path-to-a-banner-image.jpg"
-  }
-  // ---- SAMPLE EVENT (commented out — copy this shape) ----
-  // {
-  //   name: "Annual Tech Fest — Innovate 2026",
-  //   date: "2026-11-14",
-  //   startTime: "10:00",
-  //   endTime: "18:00",
-  //   venue: "Main Auditorium, UB-VI",
-  //   description: "A full day of project showcases, guest talks, and workshops from student clubs across departments. Open to all years — drop by any time.",
-  //   image: "https://example.com/path-to-a-banner-image.jpg"
-  // },
-
+window.CAMPUSFLOW_EVENTS = [
+   {
+      name: "THE INNER FIGHT: From Fear to Confidence",
+      date: "2026-09-19",
+      startTime: "14:00",
+      endTime: "16:00",
+      venue: "UB-II, Auditorium",
+      description: "Mononiketan – Mental Health & Wellness Centre, Brainware University, is pleased to organize “THE INNER FIGHT: From Fear to Confidence,” an experiential programme focusing on suicide prevention, emotional resilience, self-confidence, and mental well-being. ",
+      image: null,
+   },
+   {
+      name: "Photography Competetion-Cum-Exhibition",
+      date: "2026-10-01",
+      startTime: "11:00",
+      endTime: null,
+      venue: "UB-II, 007",
+      description: "Mononiketan – Mental Health & Wellness Centre, Brainware University, is pleased to organize “THE INNER FIGHT: From Fear to Confidence,” an experiential programme focusing on suicide prevention, emotional resilience, self-confidence, and mental well-being. ",
+      image: "assets/photography-competetion-2026.jpeg",
+   },
+   {
+      name: "ARDUINO EDGE AI HACKATHON",
+      date: "2026-10-06",
+      startTime: "00:00",
+      endTime: null,
+      venue: "UB-II, Auditorium",
+      description: "The AI & Tech Club, IEEE Student Branch – Brainware University, in association with the Department of Computer Science & Engineering (CSE) and Institution’s Innovation Council (IIC), Brainware University, in collaboration with StemLore, is organizing the Arduino Edge AI Hackathon 2026 – Build, Innovate & Deploy as part of the IEEE Day Celebration 2026.",
+      image: null,
+   },
 ];
+// ---- SAMPLE EVENT (commented out — copy this shape) ----
+// {
+//   name: "Annual Tech Fest — Innovate 2026",
+//   date: "2026-11-14",
+//   startTime: "10:00",
+//   endTime: "18:00",
+//   venue: "Main Auditorium, UB-VI",
+//   description: "A full day of project showcases, guest talks, and workshops from student clubs across departments. Open to all years — drop by any time.",
+//   image: "https://example.com/path-to-a-banner-image.jpg"
+// },

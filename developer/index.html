@@ -1,93 +1,131 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Developer — CampusFlow</title>
-<meta name="theme-color" content="#0F1B33">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../style.css">
-<script src="https://kit.fontawesome.com/826e39b053.js" crossorigin="anonymous"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Developer — CampusFlow</title>
+  <meta name="theme-color" content="#0F1B33">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="../style.css">
+  <script src="https://kit.fontawesome.com/826e39b053.js" crossorigin="anonymous"></script>
 </head>
+
 <body data-theme="light">
 
-<header class="topbar">
-  <div class="topbar__left">
-    <button class="hamburger-btn" id="btn-hamburger" aria-label="Open menu">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
-    </button>
-    <span class="topbar__brand">CampusFlow</span>
-  </div>
-  <nav class="topbar__nav" aria-label="Primary">
-    <a class="topnav-link" href="../">Dashboard</a>
-    <a class="topnav-link" href="../#classes">Classes</a>
-    <a class="topnav-link" href="../#works">Works</a>
-    <a class="topnav-link" href="../#events">Events</a>
-    <a class="topnav-link" href="../#settings">Settings</a>
-  </nav>
-</header>
-
-<div id="app">
-  <div class="view is-active">
-    <main class="content dev-page">
-      <img class="dev-avatar" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect width='128' height='128' fill='%23E2DDCE'/%3E%3Ccircle cx='64' cy='50' r='22' fill='%23A9A493'/%3E%3Cpath d='M20 118c6-28 24-42 44-42s38 14 44 42' fill='%23A9A493'/%3E%3C/svg%3E" alt="Developer photo">
-
-      <div>
-        <h1 class="dev-name">The Rashid Khan</h1>
-        <p class="dev-role">Developer of CampusFlow</p>
-      </div>
-
-      <p class="dev-bio">
-        I built CampusFlow to solve a problem I kept running into every semester — dense, multi-group
-        college timetables that were hard to read at a glance and even harder to navigate between
-        classes. It's a small, privacy-first project: everything runs in your browser, nothing is
-        ever sent to a server, and it's free to use and adapt. Thanks for checking it out.
-      </p>
-
-      <div class="dev-links">
-        <a class="dev-link" href="https://linkedin.com/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
-          <i class="fa-brands fa-linkedin"></i>
-        </a>
-        <a class="dev-link" href="https://github.com/" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
-          <i class="fa-brands fa-github"></i>
-        </a>
-      </div>
-
-      <a class="dev-back" href="../">← Back to CampusFlow</a>
-    </main>
-  </div>
-</div>
-
-<!-- ============ DRAWER (same component as the main app) ============ -->
-<div class="side-panel side-panel--left" id="panel-drawer">
-  <div class="side-panel__backdrop" data-close-panel="panel-drawer"></div>
-  <div class="side-panel__sheet side-panel__sheet--left">
-    <div class="side-panel__head">
+  <header class="topbar">
+    <div class="topbar__left">
+      <button class="hamburger-btn" id="btn-hamburger" aria-label="Open menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M4 7h16M4 12h16M4 17h16" />
+        </svg>
+      </button>
       <span class="topbar__brand">CampusFlow</span>
-      <button class="modal__close" data-close-panel="panel-drawer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
     </div>
-    <nav class="drawer-nav">
-      <a class="drawer-link" href="../"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11.5 12 4l8 7.5"/><path d="M6 10v9.5a1 1 0 0 0 1 1h3.5V15h3v5.5H17a1 1 0 0 0 1-1V10"/></svg><span>Dashboard</span></a>
-      <a class="drawer-link" href="../#classes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4" width="17" height="5" rx="1.3"/><rect x="3.5" y="14" width="17" height="5" rx="1.3"/><path d="M7 6.5h.01M7 16.5h.01"/></svg><span>Classes</span></a>
-      <a class="drawer-link" href="../#works"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M8.5 11.5l1.7 1.7L13.5 10"/><path d="M8.5 16.5h7"/></svg><span>Works</span></a>
-      <a class="drawer-link" href="../#events"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="16" rx="2.5"/><path d="M8 3v4M16 3v4M3.5 10h17"/></svg><span>Events</span></a>
-      <a class="drawer-link" href="../#settings"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" /></svg><span>Settings</span></a>
-      <span class="drawer-link" style="opacity:.55;cursor:default;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 7 3.5 12l5 5M15.5 7l5 5-5 5M13.5 4.5l-3 15"/></svg><span>Developer (here)</span></span>
+    <nav class="topbar__nav" aria-label="Primary">
+      <a class="topnav-link" href="../">Dashboard</a>
+      <a class="topnav-link" href="../#classes">Classes</a>
+      <a class="topnav-link" href="../#works">Works</a>
+      <a class="topnav-link" href="../#events">Events</a>
+      <a class="topnav-link" href="../#settings">Settings</a>
     </nav>
-  </div>
-</div>
+  </header>
 
-<script>
-  document.getElementById('btn-hamburger').addEventListener('click', () => {
-    document.getElementById('panel-drawer').classList.add('is-open');
-  });
-  document.querySelectorAll('[data-close-panel]').forEach(el => {
-    el.addEventListener('click', () => {
-      document.getElementById(el.getAttribute('data-close-panel')).classList.remove('is-open');
+  <div id="app">
+    <div class="view is-active">
+      <main class="content dev-page">
+        <img class="dev-avatar" src="../assets/developer-image.png" alt="Developer photo">
+
+        <div>
+          <h1 class="dev-name">The Rashid Khan</h1>
+          <p class="dev-role">Developer of CampusFlow</p>
+        </div>
+
+        <p class="dev-bio">
+          I built CampusFlow to solve a problem I kept running into every semester — dense, multi-group
+          college timetables that were hard to read at a glance and even harder to navigate between
+          classes. It's a small, privacy-first project: everything runs in your browser, nothing is
+          ever sent to a server, and it's free to use and adapt. Thanks for checking it out.
+        </p>
+
+        <div class="dev-links">
+          <a class="dev-link" href="https://www.linkedin.com/in/itrk70/" target="_blank" rel="noopener noreferrer"
+            aria-label="LinkedIn">
+            <i class="fa-brands fa-linkedin"></i>
+          </a>
+          <a class="dev-link" href="https://github.com/itrk70/" target="_blank" rel="noopener noreferrer"
+            aria-label="GitHub">
+            <i class="fa-brands fa-github"></i>
+          </a>
+        </div>
+
+        <a class="dev-back" href="../">← Back to CampusFlow</a>
+      </main>
+    </div>
+  </div>
+
+  <!-- ============ DRAWER (same component as the main app) ============ -->
+  <div class="side-panel side-panel--left" id="panel-drawer">
+    <div class="side-panel__backdrop" data-close-panel="panel-drawer"></div>
+    <div class="side-panel__sheet side-panel__sheet--left">
+      <div class="side-panel__head">
+        <span class="topbar__brand">CampusFlow</span>
+        <button class="modal__close" data-close-panel="panel-drawer"><svg viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="1.9" stroke-linecap="round">
+            <path d="M6 6l12 12M18 6 6 18" />
+          </svg></button>
+      </div>
+      <nav class="drawer-nav">
+        <a class="drawer-link" href="../"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 11.5 12 4l8 7.5" />
+            <path d="M6 10v9.5a1 1 0 0 0 1 1h3.5V15h3v5.5H17a1 1 0 0 0 1-1V10" />
+          </svg><span>Dashboard</span></a>
+        <a class="drawer-link" href="../#classes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3.5" y="4" width="17" height="5" rx="1.3" />
+            <rect x="3.5" y="14" width="17" height="5" rx="1.3" />
+            <path d="M7 6.5h.01M7 16.5h.01" />
+          </svg><span>Classes</span></a>
+        <a class="drawer-link" href="../#works"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="5" y="4" width="14" height="17" rx="2" />
+            <path d="M8.5 11.5l1.7 1.7L13.5 10" />
+            <path d="M8.5 16.5h7" />
+          </svg><span>Works</span></a>
+        <a class="drawer-link" href="../#events"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3.5" y="5" width="17" height="16" rx="2.5" />
+            <path d="M8 3v4M16 3v4M3.5 10h17" />
+          </svg><span>Events</span></a>
+        <a class="drawer-link" href="../#settings"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3" />
+            <path
+              d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+          </svg><span>Settings</span></a>
+        <span class="drawer-link" style="opacity:.55;cursor:default;"><svg viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M8.5 7 3.5 12l5 5M15.5 7l5 5-5 5M13.5 4.5l-3 15" />
+          </svg><span>Developer (here)</span></span>
+      </nav>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('btn-hamburger').addEventListener('click', () => {
+      document.getElementById('panel-drawer').classList.add('is-open');
     });
-  });
-</script>
+    document.querySelectorAll('[data-close-panel]').forEach(el => {
+      el.addEventListener('click', () => {
+        document.getElementById(el.getAttribute('data-close-panel')).classList.remove('is-open');
+      });
+    });
+  </script>
 </body>
+
 </html>
