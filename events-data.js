@@ -74,7 +74,7 @@ window.CAMPUSFLOW_EVENTS = [
       endTime: null,
       venue: "UB-II, 007",
       description: "The Department of Media Science and Journalism is excited to invite you all to PHOTOSLAST 2026 – Photography Competition-Cum-Exhibition. Join us as we celebrate photography, creativity, and the stories captured through different lenses.",
-      image: "assets/photography-competetion-2026.jpeg",
+      image: "assets/PHOTOSLAST-2026.jpeg",
    },
 ];
 // ---- SAMPLE EVENT (commented out — copy this shape) ----
