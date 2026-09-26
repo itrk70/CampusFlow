@@ -1,0 +1,14 @@
+Update - Version 3
+
+We are going to have a new version update where we focus on adding some new features and updating or improving some old ones. 
+
+Here are the New Features:
+
+
+Update Required:
+1. Event Page Update:
+1.1. Similar to other pages like classes, Works & Settings, on the top section header (where section name is written) you added a circular icon on the right side but in the event page, there is no icon, so i want to add there and because this event page is all about Brainware University Events, so it will be best if we add university logo instead of any other icons. Use the attached image (png: ).
+
+1.2. Currently on the event page it is just a showcase of all event, i want to make it more interactive, Means it will be just as it is but there will be a new feature, on clicking on the event card, a popup window will appear with proper event Name, description, Banner image (if any, with width fix but height auto so that full image can be shown), and all other details which we have with one additional details which is MAR Points, as "MAR Points: 05" (if any), in case the event don't offer any mar point the it will be "MAR Point: N/A" for MAR value null in the event data. Also for closing this popup window add a small cross icon i.e. close button on the top right corner (with some margins). 
+
+2. Developers page: Current developer page feels very separate from the main website, reason is it's default background color, even if user chooses light or dark theme the developer page theme is same. I want to make the developer page looks same, if user set theme as Light, than the developer page bg will match with our website light bg, if selected dark than match with our website dark bg, also adjust the other elements and text as per the theme accordingly. 
