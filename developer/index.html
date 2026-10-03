@@ -16,6 +16,24 @@
 </head>
 
 <body data-theme="light">
+  <script>
+    // Match the theme chosen in the main app (stored in the same localStorage key)
+    (function(){
+      function sync(){
+        var dark = false;
+        try{
+          var raw = localStorage.getItem('campusflow.v1');
+          if(raw){ var st = JSON.parse(raw); dark = !!(st && st.settings && st.settings.darkMode); }
+        }catch(e){}
+        document.body.setAttribute('data-theme', dark ? 'dark' : 'light');
+        var meta = document.querySelector('meta[name="theme-color"]');
+        if(meta) meta.setAttribute('content', dark ? '#0E141F' : '#F4F1E9');
+      }
+      sync();
+      window.addEventListener('storage', sync);
+      window.addEventListener('pageshow', sync);
+    })();
+  </script>
 
   <header class="topbar">
     <div class="topbar__left">
@@ -30,6 +48,8 @@
       <a class="topnav-link" href="../">Dashboard</a>
       <a class="topnav-link" href="../#classes">Classes</a>
       <a class="topnav-link" href="../#works">Works</a>
+      <a class="topnav-link" href="../#planner">Planner</a>
+      <a class="topnav-link" href="../#notes">Notes</a>
       <a class="topnav-link" href="../#events">Events</a>
       <a class="topnav-link" href="../#settings">Settings</a>
     </nav>
@@ -97,6 +117,8 @@
             <path d="M8.5 11.5l1.7 1.7L13.5 10" />
             <path d="M8.5 16.5h7" />
           </svg><span>Works</span></a>
+        <a class="drawer-link" href="../#planner"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9l10-5 10 5-10 5-10-5z"/><path d="M6 11.5V16c0 1.5 2.7 3 6 3s6-1.5 6-3v-4.5"/><path d="M22 9v6"/></svg><span>Planner</span></a>
+        <a class="drawer-link" href="../#notes"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h14a1 1 0 0 1 1 1v10l-5 5H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/><path d="M15 20v-4a1 1 0 0 1 1-1h4"/><path d="M8 9h8M8 13h4"/></svg><span>Notes</span></a>
         <a class="drawer-link" href="../#events"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
             stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
             <rect x="3.5" y="5" width="17" height="16" rx="2.5" />

@@ -18,6 +18,10 @@
    - description   (required) A short paragraph about the event.
    - image         (optional) A URL to a banner image. Leave it
                    out (or null) to show no banner.
+   - mar           (optional) MAR points the event offers, e.g. 5.
+                   Shown in the event popup as "MAR Points: 05".
+                   Use null (or leave it out) when the event offers
+                   none — the popup then shows "MAR Point: N/A".
 
    STATUS (computed automatically — you don't set this):
    - "Upcoming"  → before the event starts
@@ -39,6 +43,7 @@ window.CAMPUSFLOW_EVENTS = [
       venue: "UB-II, Auditorium",
       description: "Mononiketan – Mental Health & Wellness Centre, Brainware University, is pleased to organize “THE INNER FIGHT: From Fear to Confidence,” an experiential programme focusing on suicide prevention, emotional resilience, self-confidence, and mental well-being. ",
       image: null,
+      mar: null,
    },
    // {
    //    name: "Photography Competetion-Cum-Exhibition",
@@ -57,6 +62,7 @@ window.CAMPUSFLOW_EVENTS = [
       venue: "UB-II, Auditorium",
       description: "The AI & Tech Club, IEEE Student Branch – Brainware University, in association with the Department of Computer Science & Engineering (CSE) and Institution’s Innovation Council (IIC), Brainware University, in collaboration with StemLore, is organizing the Arduino Edge AI Hackathon 2026 – Build, Innovate & Deploy as part of the IEEE Day Celebration 2026.",
       image: "assets/ARDUINO-EDGE-AI-HACKATHON-2026.jpeg",
+      mar: null,
    },
    {
       name: "Coaster Making Competetion",
@@ -66,6 +72,7 @@ window.CAMPUSFLOW_EVENTS = [
       venue: "UB-III, 405",
       description: "The Art & Craft Club, Brainware University is organising a Coaster Making Competition to encourage creativity, artistic expression, and hands-on craft skills among students.",
       image: null,
+      mar: null,
    },
    {
       name: "PHOTOSLAST 2026 – Photography Competition-Cum-Exhibition",
@@ -74,7 +81,8 @@ window.CAMPUSFLOW_EVENTS = [
       endTime: null,
       venue: "UB-II, 007",
       description: "The Department of Media Science and Journalism is excited to invite you all to PHOTOSLAST 2026 – Photography Competition-Cum-Exhibition. Join us as we celebrate photography, creativity, and the stories captured through different lenses.",
-      image: "assets/photography-competetion-2026.jpeg",
+      image: "assets/PHOTOSLAST-2026.jpeg",
+      mar: null,
    },
 ];
 // ---- SAMPLE EVENT (commented out — copy this shape) ----
@@ -85,6 +93,7 @@ window.CAMPUSFLOW_EVENTS = [
 //   endTime: "18:00",
 //   venue: "Main Auditorium, UB-VI",
 //   description: "A full day of project showcases, guest talks, and workshops from student clubs across departments. Open to all years — drop by any time.",
-//   image: "https://example.com/path-to-a-banner-image.jpg"
+//   image: "https://example.com/path-to-a-banner-image.jpg",
+//   mar: 5
 // },
 

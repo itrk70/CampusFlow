@@ -4,6 +4,23 @@ We are going to have a new version update where we focus on adding some new feat
 
 Here are the New Features:
 
+1. Exam & Event: Add a new section called "Exam and Event", here user will add his or her exams including subject name, building & room number, start & end time, exam type (i.e. CT1, CT2, Semester, other - will be user input not select or radio). Or any special event that provide classes leave, like 2nd Oct, Gandhi Janti, this will be treaded as holiday. Also along with other field as suggested a radio filed will also be there for selecting Exam or Event and one for selecting Partial Day of Complete Day. 
+Concept of Partial/Complete Day: For Any Exam or Event, if selected Partial than all the classes during the exam/event will be shown as "Canceled" because during any exam no classes will be there, similarly if selected Complete Day than all the classes of that day will be marked as "Canceled". This is for both Exam & Event. 
+
+2. Work Page Filter: Add a filter option at the top on the work page where user can filter the pending work by filtering using check box: Assignment, Lab Work (by default both will be checked to show all content). How this filter work, add a filter icon by replacing the work icon (on the top right side of header along with Page Title/Heading). On click a small window will be open from top to bottom after the header for filtering and the filter icon will change to cross icon to close the filter window, the icon change will be smooth. On hovering cross icon for closing filter it will smoothly change it color from white to red with it's button border (circular button).
+
+3. Work Page Tags: Currently we have two options in work page which are "Assignment" and "Lab Work". But i discover that there are some other kinds of work also so i want to include that also. So in type add "PPT", "Quiz", "Workshop", "Online Exam", and "Other" (if user select Other than a text field will be enable where user need to specify the type of work, this is for those work that are not generally to create a predefine type).
+
+4. Notepad: A new feature or section i want to add, add a new section called Notepad, where user can add their important/short notes. This will be simply a plain text writing panel, with some basic tools of text formatting like: Bold, Italic, Underline, List (Bullets, Number), Undo/Redo. Similar to other sections like classes, works, etc. It will also feature in bottom nav (as well as in the menu option), on the page add a plus icon inside a circular button, for creating a note, on clicking a window will open having placeholder "Title" where user can enter their note title, then "Body" where user can write their notes. either no title or body will be acceptable but without having both (i.e. both empty) it will not save. How to save after writing?, On the right side in the line of Title (as title is on the left side) there will be a three vertical dot icons, on clicking it will open a short menu having options "Save" & "Close". "Save" option will just save the note and give a message "Note Saved" but don't close the note window, Without saving if clicked "Close" the note window will close but the notes whatever was written will not save, it will not save in the browser storage. 
+Dashboard option - On dashboard, we currently have "Add regular class", "Add extra session", "Add work". Add another after add work, which is "Add Note".
+
+5. Work Autodelete: For any work, if the end date/last date is passed, than after 7 days from end/last date the work will be automatically deleted.
+
+6. Custom Work Type: As described above, one more type need to be added which is "NPTEL", but if selected this type than the work will be styled differently, like treating this as an special work. The work card will be change it's style as:
+Background Color: #FCFCFC
+Title & Left side border color: #8B0000
+Other text: #000000
+Keep the status color and theme as it is like now, i.e. "Completed"/"Not Completed"/"Missed" all these status tags remains same.
 
 Update Required:
 1. Event Page Update:
@@ -12,3 +29,12 @@ Update Required:
 1.2. Currently on the event page it is just a showcase of all event, i want to make it more interactive, Means it will be just as it is but there will be a new feature, on clicking on the event card, a popup window will appear with proper event Name, description, Banner image (if any, with width fix but height auto so that full image can be shown), and all other details which we have with one additional details which is MAR Points, as "MAR Points: 05" (if any), in case the event don't offer any mar point the it will be "MAR Point: N/A" for MAR value null in the event data. Also for closing this popup window add a small cross icon i.e. close button on the top right corner (with some margins). 
 
 2. Developers page: Current developer page feels very separate from the main website, reason is it's default background color, even if user chooses light or dark theme the developer page theme is same. I want to make the developer page looks same, if user set theme as Light, than the developer page bg will match with our website light bg, if selected dark than match with our website dark bg, also adjust the other elements and text as per the theme accordingly. 
+
+3. Extra Classes: I want to add a new feature for this extra class section, because sometimes extra class will be allotted for multiple date, so i need to add same details multiple time for different dates, so i want add add a repeat on option where user can select multiple dates other than the selected date, like for example imagine a extra class is scheduled for 30 Sep, 02 Oct, 05 Oct, 09 Oct 2026, all are for same subject, same teacher, and same building room with same duration and time. Just different dates, so instead of creating all classes differently just choose 30 sep as generally but we will check a box "Multiple" under date, once clicked another date filed will be appear but here unlike ordinary date input, here we can select/input multiple dates as of user requirements i.e. 02 Oct, 05 oct, 09 oct 2026 as per our example (can be more or less, but minimum 1 if the box is checked).
+
+4. Dashboard: In the dashboard i want to add a section where most urgent work will be shown, unlike we currently have just a simple small work shown, i want to make those look more eye catching, and also move it above the "Rest of today" section in dashboard, so that anyone can see instantly without scrolling. To make it more eye catching add some red color wherever suitable because red will be most noticeable color. Which one to show? All those work who's date are in next 2 days. i.e. for all work have date left either 1 day, 2 days, or Today.
+
+5. Bottom Nav: Add Events, Planner navigation icon at the bottom nav menu, so that user can easily navigate to sections.
+
+
+Additionally: Update the version to "3.2.4"
