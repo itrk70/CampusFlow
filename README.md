@@ -1,4 +1,4 @@
-# CampusFlow — v3.2.4
+# CampusFlow — v4.2.6
 
 A privacy-first, offline schedule tracker for students. No login, no server, no database — everything lives in your browser's `localStorage`. This version adds attendance tracking, a Works (assignments/lab) tracker, a campus Events board, a digital student ID card, and a developer page.
 
@@ -63,3 +63,7 @@ Browser push notifications require:
 ## Browser support
 
 Built with vanilla HTML/CSS/JS — works in any modern browser (Chrome, Safari, Firefox, Edge). Uses CSS `:has()` (for the Works "type" radio chips) and `backdrop-filter` (ID card viewer) — both are well-supported in current browsers but degrade gracefully to a plain (non-highlighted / non-blurred) look on very old ones. `localStorage` and the Notifications API are required for full functionality; the app still works without notifications, just without the 15-minute alert.
+
+## Assets added in v4.2.6
+- `assets/fonts/pixel.ttf` — the "Pixel" font used for the Planner "Coming Soon" text (loaded by `@font-face` at the end of `style.css`).
+- `assets/pre-loader.svg` — the animated pre-loader shown while the app starts (markup at the top of `<body>` in `index.html`).

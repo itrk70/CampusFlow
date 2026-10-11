@@ -22,7 +22,8 @@ function defaultState(){
     extraSessions: [],    // {id, subject, professor, building, room, date:"YYYY-MM-DD", start, end}
     works: [],             // {id, subject, type:'assignment'|'lab'|'ppt'|'quiz'|'workshop'|'onlineexam'|'nptel'|'other', otherType?, dueDate:'YYYY-MM-DD', completed:bool}
     completed: {},        // key `${classId}__${YYYY-MM-DD}` -> true
-    planner: [],           // {id, kind:'exam'|'event', name, examType, building, room, date, mode:'partial'|'complete', start, end}
+    occasions: [],         // {id, type:'exam'|'festival'|'event'|'other', otherType?, name, startDate, startTime, endDate, endTime, scope:'major'|'minor'}
+    noteColors: [],        // custom text colors the user added in the notepad
     notes: [],             // {id, title, body(html), updatedAt}
     activePreset: null,   // e.g. "CSE-E1" — which preset's classes are currently auto-applied (null = none / manual only)
     settings: {
@@ -38,11 +39,34 @@ function defaultState(){
 
 let state = loadState();
 
+// v3 stored exams/events in `planner`; v4 calls them occasions
+function legacyToOccasion(p){
+  const venue = [p.building, p.room].filter(Boolean).join(' ');
+  const complete = p.mode === 'complete';
+  return {
+    id: p.id || uid(),
+    type: p.kind === 'exam' ? 'exam' : 'event',
+    otherType: '',
+    name: (p.name || 'Untitled') + (p.examType ? ` (${p.examType})` : '') + (venue ? ` – ${venue}` : ''),
+    startDate: p.date, endDate: p.date,
+    startTime: complete ? '00:00' : (p.start || '00:00'),
+    endTime: complete ? '23:59' : (p.end || '23:59'),
+    scope: 'major'
+  };
+}
+function migrateState(st){
+  if(Array.isArray(st.planner)){
+    st.occasions = (Array.isArray(st.occasions) ? st.occasions : []).concat(st.planner.map(legacyToOccasion));
+    delete st.planner;
+  }
+  return st;
+}
+
 function loadState(){
   try{
     const raw = localStorage.getItem(STORE_KEY);
     if(!raw) return defaultState();
-    const parsed = JSON.parse(raw);
+    const parsed = migrateState(JSON.parse(raw));
     return { ...defaultState(), ...parsed, settings: { ...defaultState().settings, ...(parsed.settings||{}) } };
   }catch(e){
     console.error('CampusFlow: failed to load state, resetting.', e);
@@ -122,12 +146,13 @@ function getInstancesForDate(dateObj){
 
   instances.sort((a,b) => timeToMinutes(a.start) - timeToMinutes(b.start));
 
-  // exams / events cancel classes: complete-day cancels everything, partial cancels overlapping classes
-  const plans = plannerForDate(iso);
-  if(plans.length){
+  // a Major occasion cancels every class (regular or extra) that overlaps its duration
+  const majors = occasionsForDate(iso).filter(o => o.scope === 'major');
+  if(majors.length){
     instances.forEach(inst => {
-      const hit = plans.find(p => p.mode === 'complete' ||
-        (p.start && p.end && timeToMinutes(inst.start) < timeToMinutes(p.end) && timeToMinutes(inst.end) > timeToMinutes(p.start)));
+      const iStart = new Date(`${iso}T${inst.start}:00`);
+      const iEnd = new Date(`${iso}T${inst.end}:00`);
+      const hit = majors.find(o => iStart < occasionEnd(o) && iEnd > occasionStart(o));
       if(hit) inst.canceledBy = hit;
     });
   }
@@ -371,8 +396,7 @@ function renderTimeline(){
   const list = document.getElementById('timeline-list');
   const empty = document.getElementById('timeline-empty');
 
-  const plans = plannerForDate(todayISO(viewingDate))
-    .sort((a,b) => (a.start || '00:00').localeCompare(b.start || '00:00'));
+  const plans = occasionsForDate(todayISO(viewingDate)).sort((a,b) => occasionStart(a) - occasionStart(b));
 
   if(instances.length === 0 && plans.length === 0){
     list.innerHTML = '';
@@ -381,15 +405,15 @@ function renderTimeline(){
   }
   empty.hidden = true;
 
-  const planHtml = plans.map(p => `
-      <li class="timeline-card planner-card" data-kind="${p.kind}">
+  const planHtml = plans.map(o => `
+      <li class="timeline-card planner-card" data-kind="${o.type}" data-scope="${o.scope}">
         <div class="timeline-card__top">
           <div>
-            <div class="timeline-card__subject">${escapeHtml(p.name)}<span class="chip-plan">${p.kind === 'exam' ? 'EXAM' : 'EVENT'}</span></div>
-            ${p.kind === 'exam' && p.examType ? `<div class="timeline-card__professor">${escapeHtml(p.examType)}</div>` : ''}
+            <div class="timeline-card__subject">${escapeHtml(o.name)}<span class="chip-plan">${escapeHtml(occasionTypeLabel(o).toUpperCase())}</span></div>
+            <div class="timeline-card__professor">${o.scope === 'major' ? 'Major · classes canceled' : 'Minor · classes unaffected'}</div>
           </div>
         </div>
-        <div class="timeline-card__meta">${plannerTimeLabel(p)}${p.building || p.room ? ' · ' + escapeHtml([p.building, p.room].filter(Boolean).join(', ')) : ''}</div>
+        <div class="timeline-card__meta">${occasionWhenLabel(o)}</div>
       </li>`).join('');
 
   list.innerHTML = planHtml + instances.map(instance => {
@@ -515,7 +539,7 @@ function renderWorks(){
     const pillLabel = status === 'done' ? 'Completed' : 'Not Completed';
     const key = workTypeKey(w);
     return `
-      <li class="timeline-card work-card${key === 'nptel' ? ' work-card--nptel' : ''}" data-status="${status}" data-type="${key}" data-work-id="${w.id}">
+      <li class="timeline-card work-card${key === 'nptel' ? ' work-card--nptel' : ''}${key === 'ppt' ? ' work-card--ppt' : ''}" data-status="${status}" data-type="${key}" data-work-id="${w.id}">
         <div class="timeline-card__top">
           <div>
             <div class="timeline-card__subject">${escapeHtml(w.subject)}<span class="type-chip">${escapeHtml(workTypeLabel(w))}</span></div>
@@ -1074,18 +1098,33 @@ function renderAvatar(){
 // =========================================================
 // NAVIGATION
 // =========================================================
-const VALID_VIEWS = ['dashboard','classes','works','planner','notes','events','settings'];
+const VALID_VIEWS = ['dashboard','classes','works','planner','notes','occasions','events','settings'];
+const MENU_VIEWS = ['planner','notes','events','occasions']; // the tabs that live inside the Menu popup
+let currentView = 'dashboard';
+
+function setMenuOpen(open){
+  document.getElementById('menu-pop').hidden = !open;
+  document.getElementById('menu-overlay').hidden = !open;
+  document.getElementById('btn-nav-menu').setAttribute('aria-expanded', open ? 'true' : 'false');
+  updateMenuActive();
+}
+function updateMenuActive(){
+  const open = !document.getElementById('menu-pop').hidden;
+  document.getElementById('btn-nav-menu').classList.toggle('is-active', open || MENU_VIEWS.includes(currentView));
+}
 
 function switchView(name){
   if(!VALID_VIEWS.includes(name)) name = 'dashboard';
   document.querySelectorAll('.view').forEach(v => v.classList.remove('is-active'));
   document.getElementById(`view-${name}`).classList.add('is-active');
-  document.querySelectorAll('.nav-btn, .topnav-link').forEach(b => b.classList.toggle('is-active', b.getAttribute('data-view') === name));
+  currentView = name;
+  document.querySelectorAll('.nav-btn[data-view], .topnav-link, .menu-pop__item').forEach(b => b.classList.toggle('is-active', b.getAttribute('data-view') === name));
+  updateMenuActive();
 
   if(name === 'dashboard') renderDashboard();
   if(name === 'classes') renderTimeline();
   if(name === 'works') renderWorks();
-  if(name === 'planner') renderPlanner();
+  if(name === 'occasions') renderOccasions();
   if(name === 'notes') renderNotes();
   if(name === 'events') renderEvents();
   if(name === 'settings') renderSettings();
@@ -1093,12 +1132,23 @@ function switchView(name){
   try{ history.replaceState(null, '', name === 'dashboard' ? (location.pathname + location.search) : `#${name}`); }catch(e){}
 }
 
-document.querySelectorAll('.nav-btn, .topnav-link').forEach(btn => {
+document.querySelectorAll('.nav-btn[data-view], .topnav-link, .menu-pop__item').forEach(btn => {
   btn.addEventListener('click', () => {
+    setMenuOpen(false);
     if(btn.getAttribute('data-view') === 'classes') viewingDate = new Date();
     switchView(btn.getAttribute('data-view'));
   });
 });
+document.getElementById('btn-nav-menu').addEventListener('click', (e) => {
+  e.stopPropagation();
+  setMenuOpen(document.getElementById('menu-pop').hidden);
+});
+document.getElementById('menu-overlay').addEventListener('click', () => setMenuOpen(false));
+document.addEventListener('click', (e) => {
+  if(document.getElementById('menu-pop').hidden) return;
+  if(!e.target.closest('#menu-pop') && !e.target.closest('#btn-nav-menu')) setMenuOpen(false); // any click outside closes it
+});
+document.addEventListener('keydown', (e) => { if(e.key === 'Escape') setMenuOpen(false); });
 document.getElementById('btn-jump-today').addEventListener('click', () => {
   viewingDate = new Date();
   renderTimeline();
@@ -1113,10 +1163,13 @@ document.getElementById('btn-add-regular').addEventListener('click', () => openR
 document.getElementById('btn-add-extra').addEventListener('click', () => openExtraModal(null));
 document.getElementById('btn-add-work').addEventListener('click', () => openWorkModal(null));
 document.getElementById('btn-add-note').addEventListener('click', () => openNoteEditor(null));
-document.getElementById('btn-fab-add-planner').addEventListener('click', () => openPlannerModal(null));
+document.getElementById('btn-fab-add-occasion').addEventListener('click', () => openOccasionModal(null));
+document.getElementById('btn-add-occasion').addEventListener('click', () => openOccasionModal(null));
 document.getElementById('btn-fab-add-note').addEventListener('click', () => openNoteEditor(null));
 document.getElementById('urgent-list').addEventListener('click', (e) => { if(e.target.closest('[data-go-works]')) switchView('works'); });
-document.getElementById('btn-fab-add').addEventListener('click', () => openExtraModal(null));
+document.getElementById('btn-fab-add').addEventListener('click', () => openModal('modal-class-choice')); // Regular or Extra Session?
+document.getElementById('choice-regular').addEventListener('click', () => { closeModal('modal-class-choice'); openRegularModal(null); });
+document.getElementById('choice-extra').addEventListener('click', () => { closeModal('modal-class-choice'); openExtraModal(null); });
 
 // settings management entries
 document.getElementById('btn-manage-regular').addEventListener('click', () => openManageModal('regular'));
@@ -1262,12 +1315,12 @@ document.getElementById('btn-apply-preset').addEventListener('click', () => {
 document.getElementById('btn-clear-data').addEventListener('click', () => {
   confirmDialog(
     'Clear local schedule data?',
-    'This permanently deletes every regular class, extra session, work, exam/event and completion mark stored on this device. Your notes, settings, ID card and profile picture stay as they are.',
+    'This permanently deletes every regular class, extra session, work, occasion and completion mark stored on this device. Your notes, settings, ID card and profile picture stay as they are.',
     () => {
       state.regularClasses = [];
       state.extraSessions = [];
       state.works = [];
-      state.planner = [];
+      state.occasions = [];
       state.completed = {};
       state.notifiedKeys = {};
       saveState();
@@ -1287,7 +1340,7 @@ document.getElementById('btn-export').addEventListener('click', () => {
     regularClasses: state.regularClasses,
     extraSessions: state.extraSessions,
     works: state.works,
-    planner: state.planner,
+    occasions: state.occasions,
     notes: state.notes
   };
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
@@ -1318,12 +1371,13 @@ document.getElementById('file-import').addEventListener('change', (e) => {
       }
       confirmDialog(
         'Import this schedule?',
-        `This adds ${data.regularClasses.length} regular class(es), ${data.extraSessions.length} extra session(s)${Array.isArray(data.works) ? `, ${data.works.length} work(s)` : ''}${Array.isArray(data.planner) ? `, ${data.planner.length} exam/event(s)` : ''}${Array.isArray(data.notes) ? ` and ${data.notes.length} note(s)` : ''} to your current data.`,
+        `This adds ${data.regularClasses.length} regular class(es), ${data.extraSessions.length} extra session(s)${Array.isArray(data.works) ? `, ${data.works.length} work(s)` : ''}${Array.isArray(data.occasions) || Array.isArray(data.planner) ? `, ${(data.occasions || []).length + (data.planner || []).length} occasion(s)` : ''}${Array.isArray(data.notes) ? ` and ${data.notes.length} note(s)` : ''} to your current data.`,
         () => {
           data.regularClasses.forEach(c => state.regularClasses.push({ ...c, id: uid() }));
           data.extraSessions.forEach(s => state.extraSessions.push({ ...s, id: uid() }));
           if(Array.isArray(data.works)) data.works.forEach(w => state.works.push({ ...w, id: uid() }));
-          if(Array.isArray(data.planner)) data.planner.forEach(p => state.planner.push({ ...p, id: uid() }));
+          if(Array.isArray(data.occasions)) data.occasions.forEach(o => state.occasions.push({ ...o, id: uid() }));
+          if(Array.isArray(data.planner)) data.planner.forEach(p => state.occasions.push({ ...legacyToOccasion(p), id: uid() })); // backups from v3
           if(Array.isArray(data.notes)) data.notes.forEach(n => state.notes.push({ ...n, id: uid(), body: sanitizeNoteHtml(n.body || '') }));
           saveState();
           refreshAllViews();
@@ -1652,7 +1706,7 @@ function tick(){
   if(document.getElementById('view-classes').classList.contains('is-active')) renderTimeline();
   if(document.getElementById('view-dashboard').classList.contains('is-active')) renderDashboard();
   if(document.getElementById('view-works').classList.contains('is-active')) renderWorks();
-  if(document.getElementById('view-planner').classList.contains('is-active')) renderPlanner();
+  if(document.getElementById('view-occasions').classList.contains('is-active')) renderOccasions();
   if(document.getElementById('view-events').classList.contains('is-active')) renderEvents();
   checkUpcomingNotifications();
 }
@@ -1709,147 +1763,156 @@ function pruneOldWorks(){
 }
 
 // =========================================================
-// PLANNER — exams & events (cancel classes)
+// OCCASIONS — exams, festivals, events & more
 // =========================================================
-function plannerForDate(iso){ return (state.planner || []).filter(p => p.date === iso); }
+const OCCASION_TYPES = { exam:'Exam', festival:'Festival', event:'Event', other:'Other' };
 
-function plannerTimeLabel(p){
-  if(p.mode === 'complete') return 'Complete day' + (p.start && p.end ? ` · ${formatTime12(p.start)} – ${formatTime12(p.end)}` : '');
-  return `${formatTime12(p.start)} – ${formatTime12(p.end)}`;
+function occasionTypeLabel(o){
+  if(o.type === 'other') return (o.otherType || '').trim() || 'Other';
+  return OCCASION_TYPES[o.type] || 'Event';
 }
-
-function plannerStatus(p, now){
-  let startDT, endDT;
-  if(p.mode === 'complete'){
-    startDT = new Date(`${p.date}T00:00:00`);
-    endDT = new Date(startDT); endDT.setDate(endDT.getDate() + 1);
-  } else {
-    startDT = new Date(`${p.date}T${p.start}:00`);
-    endDT = new Date(`${p.date}T${p.end}:00`);
-  }
-  if(now < startDT) return 'upcoming';
-  if(now < endDT) return 'ongoing';
+function occasionStart(o){ return new Date(`${o.startDate}T${o.startTime || '00:00'}:00`); }
+function occasionEnd(o){ return o.endTime ? new Date(`${o.endDate}T${o.endTime}:00`) : new Date(`${o.endDate}T23:59:59`); }
+function occasionsForDate(iso){ return (state.occasions || []).filter(o => o.startDate <= iso && iso <= o.endDate); }
+function fmtShortDate(iso){
+  return new Date(iso + 'T00:00:00').toLocaleDateString(undefined, { weekday:'short', day:'numeric', month:'short' });
+}
+function occasionWhenLabel(o){
+  const t1 = o.startTime ? formatTime12(o.startTime) : '';
+  const t2 = o.endTime ? formatTime12(o.endTime) : '';
+  if(o.startDate === o.endDate) return `${fmtShortDate(o.startDate)}${t1 && t2 ? ` · ${t1} – ${t2}` : ''}`;
+  return `${fmtShortDate(o.startDate)}${t1 ? ' · ' + t1 : ''} → ${fmtShortDate(o.endDate)}${t2 ? ' · ' + t2 : ''}`;
+}
+function occasionStatus(o, now){
+  if(now < occasionStart(o)) return 'upcoming';
+  if(now < occasionEnd(o)) return 'ongoing';
   return 'closed';
 }
 
-function renderPlanner(){
-  const list = document.getElementById('planner-list');
-  const empty = document.getElementById('planner-empty');
+function renderOccasions(){
+  const list = document.getElementById('occasions-list');
+  const empty = document.getElementById('occasions-empty');
   if(!list) return;
   const now = new Date();
-  const items = [...(state.planner || [])].sort((a,b) => (a.date + (a.start || '00:00')).localeCompare(b.date + (b.start || '00:00')));
-  const upcoming = items.filter(p => plannerStatus(p, now) !== 'closed').length;
-  document.getElementById('planner-summary-line').textContent =
-    items.length === 0 ? 'Exams, holidays & special events' : `${upcoming} upcoming · ${items.length} total`;
+  const items = [...(state.occasions || [])].sort((a,b) => occasionStart(a) - occasionStart(b));
+  const upcoming = items.filter(o => occasionStatus(o, now) !== 'closed').length;
+  document.getElementById('occasions-summary-line').textContent =
+    items.length === 0 ? 'Exams, festivals, events & more' : `${upcoming} upcoming · ${items.length} total`;
 
   if(items.length === 0){ list.innerHTML = ''; empty.hidden = false; return; }
   empty.hidden = true;
 
-  list.innerHTML = items.map(p => {
-    const status = plannerStatus(p, now);
+  list.innerHTML = items.map(o => {
+    const status = occasionStatus(o, now);
     const label = status === 'upcoming' ? 'Upcoming' : (status === 'ongoing' ? 'Ongoing' : 'Closed');
-    const place = [p.building, p.room].filter(Boolean).join(', ');
     return `
-      <li class="timeline-card planner-card" data-kind="${p.kind}" data-status="${status}">
+      <li class="timeline-card planner-card" data-kind="${o.type}" data-scope="${o.scope}" data-status="${status}">
         <div class="timeline-card__top">
           <div>
-            <div class="timeline-card__subject">${escapeHtml(p.name)}<span class="chip-plan">${p.kind === 'exam' ? 'EXAM' : 'EVENT'}</span></div>
-            ${p.kind === 'exam' && p.examType ? `<div class="timeline-card__professor">${escapeHtml(p.examType)}</div>` : ''}
+            <div class="timeline-card__subject">${escapeHtml(o.name)}<span class="chip-plan">${escapeHtml(occasionTypeLabel(o).toUpperCase())}</span></div>
           </div>
           <span class="status-pill" data-status="${status}">${label}</span>
         </div>
-        <div class="timeline-card__meta">${formatDateLong(new Date(p.date + 'T00:00:00'))}<br>${plannerTimeLabel(p)}</div>
-        ${place ? `<div class="timeline-card__plaque"><span class="timeline-card__plaque-building">${escapeHtml(p.building || '—')}</span><span class="timeline-card__plaque-room">${escapeHtml(p.room || '—')}</span></div>` : ''}
+        <div class="timeline-card__meta">${occasionWhenLabel(o)}</div>
         <div class="timeline-card__foot">
-          <span class="cancel-note">${p.mode === 'complete' ? 'Cancels all classes that day' : 'Cancels classes in this time slot'}</span>
-          <button class="link-btn" data-edit-planner="${p.id}">Edit</button>
+          <span class="cancel-note">${o.scope === 'major' ? 'Major · cancels classes in this time' : 'Minor · classes unaffected'}</span>
+          <button class="link-btn" data-edit-occasion="${o.id}">Edit</button>
         </div>
       </li>`;
   }).join('');
 
-  list.querySelectorAll('[data-edit-planner]').forEach(el => {
-    el.addEventListener('click', () => openPlannerModal(state.planner.find(p => p.id === el.getAttribute('data-edit-planner'))));
+  list.querySelectorAll('[data-edit-occasion]').forEach(el => {
+    el.addEventListener('click', () => openOccasionModal(state.occasions.find(o => o.id === el.getAttribute('data-edit-occasion'))));
   });
 }
 
-function plannerKind(){ return document.querySelector('input[name="planner-kind"]:checked').value; }
-function plannerMode(){ return document.querySelector('input[name="planner-mode"]:checked').value; }
+function occType(){ return document.querySelector('input[name="occasion-type"]:checked').value; }
+function occScope(){ return document.querySelector('input[name="occasion-scope"]:checked').value; }
 
-function syncPlannerForm(){
-  const isExam = plannerKind() === 'exam';
-  const complete = plannerMode() === 'complete';
-  document.getElementById('planner-name-label').textContent = isExam ? 'Subject name' : 'Event name';
-  document.getElementById('planner-name').placeholder = isExam ? 'e.g. Data Structures' : 'e.g. Gandhi Jayanti';
-  document.getElementById('planner-examtype-field').hidden = !isExam;
-  document.getElementById('planner-examtype').required = isExam;
-  document.getElementById('planner-building-label').textContent = isExam ? 'Building' : 'Building (optional)';
-  document.getElementById('planner-room-label').textContent = isExam ? 'Room' : 'Room (optional)';
-  document.getElementById('planner-building').required = isExam;
-  document.getElementById('planner-room').required = isExam;
-  document.getElementById('planner-start').required = !complete;
-  document.getElementById('planner-end').required = !complete;
-  document.getElementById('planner-start-label').textContent = complete ? 'Starts (optional)' : 'Starts';
-  document.getElementById('planner-end-label').textContent = complete ? 'Ends (optional)' : 'Ends';
-  document.getElementById('planner-mode-hint').textContent = complete
-    ? 'Every class on this date is marked Canceled.'
-    : 'Only classes that overlap this start–end time are marked Canceled.';
+function syncOccasionForm(){
+  const isOther = occType() === 'other';
+  document.getElementById('occasion-other-field').hidden = !isOther;
+  document.getElementById('occasion-other-type').required = isOther;
+
+  const sd = document.getElementById('occasion-startdate').value;
+  const ed = document.getElementById('occasion-enddate').value;
+  const major = occScope() === 'major';
+  const sameDay = !!sd && sd === ed;
+  const timesRequired = major || sameDay; // Major: always; same start & end date: always
+  ['starttime','endtime'].forEach(k => { document.getElementById('occasion-' + k).required = timesRequired; });
+  document.getElementById('occasion-starttime-label').textContent = timesRequired ? 'Start time' : 'Start time (optional)';
+  document.getElementById('occasion-endtime-label').textContent = timesRequired ? 'End time' : 'End time (optional)';
+  document.getElementById('occasion-enddate').min = sd || '';
+  document.getElementById('occasion-scope-hint').textContent = major
+    ? 'All classes, including extra sessions, during this time are marked Canceled. Start and end time are required.'
+    : 'Nothing is affected — all classes stay as they are.';
 }
-document.querySelectorAll('input[name="planner-kind"], input[name="planner-mode"]').forEach(r => r.addEventListener('change', syncPlannerForm));
+document.querySelectorAll('input[name="occasion-type"], input[name="occasion-scope"]').forEach(r => r.addEventListener('change', syncOccasionForm));
+document.getElementById('occasion-startdate').addEventListener('change', () => {
+  const sd = document.getElementById('occasion-startdate').value;
+  const ed = document.getElementById('occasion-enddate');
+  if(sd && (!ed.value || ed.value < sd)) ed.value = sd;
+  syncOccasionForm();
+});
+document.getElementById('occasion-enddate').addEventListener('change', syncOccasionForm);
 
-function openPlannerModal(existing){
-  document.getElementById('form-planner').reset();
-  document.getElementById('modal-planner-title').textContent = existing ? 'Edit exam / event' : 'Add exam / event';
-  document.getElementById('planner-id').value = existing ? existing.id : '';
-  const kind = existing ? existing.kind : 'exam';
-  const mode = existing ? existing.mode : 'partial';
-  document.querySelectorAll('input[name="planner-kind"]').forEach(r => { r.checked = r.value === kind; });
-  document.querySelectorAll('input[name="planner-mode"]').forEach(r => { r.checked = r.value === mode; });
-  document.getElementById('planner-name').value = existing ? existing.name : '';
-  document.getElementById('planner-examtype').value = existing ? existing.examType || '' : '';
-  document.getElementById('planner-building').value = existing ? existing.building || '' : '';
-  document.getElementById('planner-room').value = existing ? existing.room || '' : '';
-  document.getElementById('planner-date').value = existing ? existing.date : todayISO();
-  document.getElementById('planner-start').value = existing ? existing.start || '' : '';
-  document.getElementById('planner-end').value = existing ? existing.end || '' : '';
-  document.getElementById('btn-delete-planner').hidden = !existing;
-  syncPlannerForm();
-  openModal('modal-planner');
+function openOccasionModal(existing){
+  document.getElementById('form-occasion').reset();
+  document.getElementById('modal-occasion-title').textContent = existing ? 'Edit occasion' : 'Add occasion';
+  document.getElementById('occasion-id').value = existing ? existing.id : '';
+  const type = existing ? existing.type : 'exam';
+  const scope = existing ? existing.scope : 'major';
+  document.querySelectorAll('input[name="occasion-type"]').forEach(r => { r.checked = r.value === type; });
+  document.querySelectorAll('input[name="occasion-scope"]').forEach(r => { r.checked = r.value === scope; });
+  document.getElementById('occasion-other-type').value = existing && type === 'other' ? (existing.otherType || '') : '';
+  document.getElementById('occasion-name').value = existing ? existing.name : '';
+  document.getElementById('occasion-startdate').value = existing ? existing.startDate : todayISO();
+  document.getElementById('occasion-enddate').value = existing ? existing.endDate : todayISO();
+  document.getElementById('occasion-starttime').value = existing ? existing.startTime || '' : '';
+  document.getElementById('occasion-endtime').value = existing ? existing.endTime || '' : '';
+  document.getElementById('btn-delete-occasion').hidden = !existing;
+  syncOccasionForm();
+  openModal('modal-occasion');
 }
 
-document.getElementById('form-planner').addEventListener('submit', (e) => {
+document.getElementById('form-occasion').addEventListener('submit', (e) => {
   e.preventDefault();
-  const kind = plannerKind();
-  const mode = plannerMode();
-  const start = document.getElementById('planner-start').value;
-  const end = document.getElementById('planner-end').value;
-  if(mode === 'partial' && !(start && end)){ showToast('Add a start and end time'); return; }
-  if((start || end) && !(start && end)){ showToast('Add both start and end time, or leave both empty'); return; }
-  if(start && end && timeToMinutes(end) <= timeToMinutes(start)){ showToast('End time must be after start time'); return; }
+  const type = occType();
+  const scope = occScope();
+  const otherType = document.getElementById('occasion-other-type').value.trim();
+  const startDate = document.getElementById('occasion-startdate').value;
+  const endDate = document.getElementById('occasion-enddate').value;
+  const startTime = document.getElementById('occasion-starttime').value;
+  const endTime = document.getElementById('occasion-endtime').value;
 
-  const id = document.getElementById('planner-id').value || uid();
+  if(type === 'other' && !otherType){ showToast('Please specify the type'); return; }
+  if(endDate < startDate){ showToast('End date cannot be before start date'); return; }
+  const timesRequired = scope === 'major' || startDate === endDate;
+  if(timesRequired && !(startTime && endTime)){ showToast('Add both start and end time'); return; }
+  if((startTime || endTime) && !(startTime && endTime)){ showToast('Add both times, or leave both empty'); return; }
+  if(startDate === endDate && timeToMinutes(endTime) <= timeToMinutes(startTime)){ showToast('End time must be after start time'); return; }
+
+  const id = document.getElementById('occasion-id').value || uid();
   const payload = {
-    id, kind, mode,
-    name: document.getElementById('planner-name').value.trim(),
-    examType: kind === 'exam' ? document.getElementById('planner-examtype').value.trim() : '',
-    building: document.getElementById('planner-building').value.trim(),
-    room: document.getElementById('planner-room').value.trim(),
-    date: document.getElementById('planner-date').value,
-    start, end
+    id, type, scope,
+    name: document.getElementById('occasion-name').value.trim(),
+    startDate, endDate, startTime, endTime
   };
-  const idx = state.planner.findIndex(p => p.id === id);
-  if(idx >= 0) state.planner[idx] = payload; else state.planner.push(payload);
+  if(type === 'other') payload.otherType = otherType;
+  const idx = state.occasions.findIndex(o => o.id === id);
+  if(idx >= 0) state.occasions[idx] = payload; else state.occasions.push(payload);
   saveState();
-  closeModal('modal-planner');
+  closeModal('modal-occasion');
   refreshAllViews();
-  showToast(kind === 'exam' ? 'Exam saved' : 'Event saved');
+  showToast('Occasion saved');
 });
 
-document.getElementById('btn-delete-planner').addEventListener('click', () => {
-  const id = document.getElementById('planner-id').value;
-  confirmDialog('Delete this entry?', 'Any classes it canceled will be back on your schedule.', () => {
-    state.planner = state.planner.filter(p => p.id !== id);
+document.getElementById('btn-delete-occasion').addEventListener('click', () => {
+  const id = document.getElementById('occasion-id').value;
+  confirmDialog('Delete this occasion?', 'Any classes it canceled will be back on your schedule.', () => {
+    state.occasions = state.occasions.filter(o => o.id !== id);
     saveState();
-    closeModal('modal-planner');
+    closeModal('modal-occasion');
     refreshAllViews();
     showToast('Deleted');
   });
@@ -1858,7 +1921,7 @@ document.getElementById('btn-delete-planner').addEventListener('click', () => {
 // =========================================================
 // NOTEPAD
 // =========================================================
-const NOTE_ALLOWED = new Set(['B','STRONG','I','EM','U','UL','OL','LI','BR','DIV','P']);
+const NOTE_ALLOWED = new Set(['B','STRONG','I','EM','U','UL','OL','LI','BR','DIV','P','SUB','SUP','SPAN']);
 function sanitizeNoteHtml(html){
   const tpl = document.createElement('template');
   tpl.innerHTML = String(html || '');
@@ -1870,6 +1933,21 @@ function sanitizeNoteHtml(html){
         walk(ch);
         while(ch.firstChild) node.insertBefore(ch.firstChild, ch);
         ch.remove();
+        return;
+      }
+      if(ch.tagName === 'SPAN'){
+        // only text colour and highlight survive on a span
+        const c = ch.style.color, bg = ch.style.backgroundColor;
+        Array.from(ch.attributes).forEach(a => ch.removeAttribute(a.name));
+        if(c) ch.style.color = c;
+        if(bg) ch.style.backgroundColor = bg;
+        if(!ch.getAttribute('style')){
+          walk(ch);
+          while(ch.firstChild) node.insertBefore(ch.firstChild, ch);
+          ch.remove();
+          return;
+        }
+        walk(ch);
         return;
       }
       Array.from(ch.attributes).forEach(a => ch.removeAttribute(a.name));
@@ -1938,6 +2016,8 @@ function openNoteEditor(note){
   document.getElementById('note-title').value = note ? note.title || '' : '';
   document.getElementById('note-body').innerHTML = note ? sanitizeNoteHtml(note.body) : '';
   closeNoteMenu();
+  setNotePop(null);
+  noteRange = null;
   document.getElementById('note-editor').hidden = false;
   setTimeout(() => { if(!note) document.getElementById('note-title').focus(); }, 40);
 }
@@ -1945,6 +2025,7 @@ function closeNoteEditor(){
   // nothing is written to storage here — unsaved text is simply discarded
   document.getElementById('note-editor').hidden = true;
   closeNoteMenu();
+  setNotePop(null);
   noteEditingId = null;
 }
 function closeNoteMenu(){
@@ -1985,11 +2066,49 @@ document.getElementById('note-toolbar').addEventListener('mousedown', (e) => {
   if(e.target.closest('button')) e.preventDefault();
 });
 document.getElementById('note-toolbar').addEventListener('click', (e) => {
+  const popBtn = e.target.closest('button[data-pop]');
+  if(popBtn){ setNotePop(notePop === popBtn.getAttribute('data-pop') ? null : popBtn.getAttribute('data-pop')); return; }
   const btn = e.target.closest('button[data-cmd]');
   if(!btn) return;
-  document.getElementById('note-body').focus();
-  document.execCommand(btn.getAttribute('data-cmd'), false, null);
+  setNotePop(null);
+  restoreNoteRange();
+  const cmd = btn.getAttribute('data-cmd');
+  const body = document.getElementById('note-body');
+  // some browsers drop the caret at the start of the text after a list command — put it back where it was
+  const offs = (cmd === 'undo' || cmd === 'redo') ? null : getSelectionOffsets(body);
+  document.execCommand(cmd, false, null);
+  if(offs) setSelectionOffsets(body, offs);
 });
+
+// caret/selection expressed as character offsets, so it survives the DOM being restructured
+function getSelectionOffsets(body){
+  const sel = window.getSelection();
+  if(!sel.rangeCount) return null;
+  const r = sel.getRangeAt(0);
+  if(!body.contains(r.commonAncestorContainer)) return null;
+  const pre = document.createRange();
+  pre.selectNodeContents(body);
+  pre.setEnd(r.startContainer, r.startOffset);
+  const start = pre.toString().length;
+  return { start, end: start + r.toString().length };
+}
+function setSelectionOffsets(body, o){
+  const walker = document.createTreeWalker(body, NodeFilter.SHOW_TEXT);
+  let n, pos = 0, sNode, sOff, eNode, eOff;
+  while((n = walker.nextNode())){
+    const len = n.nodeValue.length;
+    if(sNode === undefined && o.start <= pos + len){ sNode = n; sOff = o.start - pos; }
+    if(eNode === undefined && o.end <= pos + len){ eNode = n; eOff = o.end - pos; break; }
+    pos += len;
+  }
+  if(!sNode || !eNode) return;
+  const range = document.createRange();
+  range.setStart(sNode, sOff);
+  range.setEnd(eNode, eOff);
+  const sel = window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(range);
+}
 document.getElementById('note-body').addEventListener('input', (e) => {
   const body = e.currentTarget;
   if(!body.textContent.trim() && !body.querySelector('li')) body.innerHTML = ''; // keeps the "Body" placeholder visible
@@ -2004,6 +2123,119 @@ document.addEventListener('keydown', (e) => {
   if(e.key !== 'Escape') return;
   if(!document.getElementById('note-menu').hidden){ closeNoteMenu(); return; }
   document.querySelectorAll('.modal-backdrop.is-open').forEach(m => m.classList.remove('is-open'));
+});
+
+// ---------- note colours & highlight ----------
+const NOTE_TEXT_COLORS = ['#000000','#595959','#D32F2F','#F57C00','#F9A825','#388E3C','#0097A7','#1976D2','#7B1FA2','#C2185B'];
+const NOTE_HIGHLIGHTS  = ['#FFFF00','#00FF00','#77FCFC','#FF00FF','#FFA500'];
+const NOTE_RESET = '#010203'; // sentinel: applying it clears the colour/highlight again
+let notePop = null;           // 'color' | 'highlight' | null
+let noteRange = null;         // last selection inside the note body
+
+document.addEventListener('selectionchange', () => {
+  const sel = window.getSelection();
+  if(!sel || !sel.rangeCount) return;
+  const r = sel.getRangeAt(0);
+  if(document.getElementById('note-body').contains(r.commonAncestorContainer)) noteRange = r.cloneRange();
+});
+function restoreNoteRange(){
+  const body = document.getElementById('note-body');
+  const sel = window.getSelection();
+  // selection still inside the note (the usual case): leave it alone so the caret stays where it is
+  if(sel.rangeCount && body.contains(sel.getRangeAt(0).commonAncestorContainer)){ body.focus(); return; }
+  body.focus();
+  if(noteRange){
+    sel.removeAllRanges();
+    sel.addRange(noteRange.cloneRange()); // a copy, so later edits don't move our saved range
+  }
+}
+
+function renderNoteColorStrip(kind){
+  const isColor = kind === 'color';
+  const list = isColor ? [...NOTE_TEXT_COLORS, ...(state.noteColors || [])] : NOTE_HIGHLIGHTS;
+  document.getElementById('note-colors-label').textContent = isColor ? 'Text color' : 'Highlight';
+  document.getElementById('note-colors-grid').innerHTML =
+    `<button type="button" class="swatch swatch--none" data-color="${NOTE_RESET}" aria-label="${isColor ? 'Default text color' : 'No highlight'}" title="${isColor ? 'Default' : 'None'}"></button>` +
+    list.map(c => `<button type="button" class="swatch" style="background:${c}" data-color="${c}" aria-label="${c}"></button>`).join('');
+  document.getElementById('btn-color-custom').hidden = !isColor; // highlight has a fixed set
+}
+function setNotePop(kind){
+  notePop = kind;
+  document.getElementById('note-colors').hidden = !kind;
+  document.querySelectorAll('#note-toolbar [data-pop]').forEach(b => b.setAttribute('aria-expanded', b.getAttribute('data-pop') === kind ? 'true' : 'false'));
+  if(kind) renderNoteColorStrip(kind);
+}
+
+function cleanupResetSpans(){
+  document.getElementById('note-body').querySelectorAll('span[style]').forEach(sp => {
+    if(sp.style.color === 'rgb(1, 2, 3)') sp.style.removeProperty('color');
+    if(sp.style.backgroundColor === 'rgb(1, 2, 3)') sp.style.removeProperty('background-color');
+    if(!(sp.getAttribute('style') || '').trim()){
+      while(sp.firstChild) sp.parentNode.insertBefore(sp.firstChild, sp);
+      sp.remove();
+    }
+  });
+}
+function applyNoteColor(kind, color){
+  restoreNoteRange();
+  document.execCommand('styleWithCSS', false, true); // only while colouring, so bold/italic stay plain <b>/<i>
+  if(kind === 'color') document.execCommand('foreColor', false, color);
+  else if(!document.execCommand('hiliteColor', false, color)) document.execCommand('backColor', false, color);
+  document.execCommand('styleWithCSS', false, false);
+  cleanupResetSpans();
+  const bar = document.getElementById(kind === 'color' ? 'tb-color-bar' : 'tb-hl-bar');
+  if(bar){ if(color === NOTE_RESET){ bar.style.background = ''; bar.style.stroke = ''; } else { bar.style.background = color; bar.style.stroke = color; } }
+}
+
+document.getElementById('note-colors').addEventListener('mousedown', (e) => {
+  if(e.target.closest('button')) e.preventDefault(); // keep the text selection
+});
+document.getElementById('note-colors-grid').addEventListener('click', (e) => {
+  const sw = e.target.closest('.swatch');
+  if(!sw) return;
+  applyNoteColor(notePop, sw.getAttribute('data-color'));
+  setNotePop(null);
+});
+
+// custom colour window
+function normaliseHex(v){
+  const m = String(v || '').trim().match(/^#?([0-9a-f]{3}|[0-9a-f]{6})$/i);
+  if(!m) return null;
+  let h = m[1].toUpperCase();
+  if(h.length === 3) h = h.split('').map(ch => ch + ch).join('');
+  return '#' + h;
+}
+function setCustomPreview(hex){
+  document.getElementById('cp-preview').style.background = hex || 'transparent';
+}
+document.getElementById('btn-color-custom').addEventListener('click', () => {
+  document.getElementById('cp-picker').value = '#1976d2';
+  document.getElementById('cp-hex').value = '#1976D2';
+  setCustomPreview('#1976D2');
+  openModal('modal-colorpick');
+});
+document.getElementById('cp-picker').addEventListener('input', (e) => {
+  const hex = normaliseHex(e.target.value);
+  document.getElementById('cp-hex').value = hex;
+  setCustomPreview(hex);
+});
+document.getElementById('cp-hex').addEventListener('input', (e) => {
+  const hex = normaliseHex(e.target.value);
+  if(hex){ document.getElementById('cp-picker').value = hex.toLowerCase(); setCustomPreview(hex); }
+});
+document.getElementById('cp-cancel').addEventListener('click', () => closeModal('modal-colorpick'));
+document.getElementById('cp-save').addEventListener('click', () => {
+  const hex = normaliseHex(document.getElementById('cp-hex').value);
+  if(!hex){ showToast('Enter a valid hex code'); return; }
+  state.noteColors = state.noteColors || [];
+  if(!NOTE_TEXT_COLORS.includes(hex) && !state.noteColors.includes(hex)){
+    state.noteColors.push(hex);
+    if(state.noteColors.length > 14) state.noteColors.shift();
+    saveState();
+  }
+  closeModal('modal-colorpick');
+  renderNoteColorStrip('color');
+  showToast('Color added');
 });
 
 // work type chips + filter
@@ -2039,7 +2271,7 @@ function refreshAllViews(){
   renderDashboard();
   renderTimeline();
   renderWorks();
-  renderPlanner();
+  renderOccasions();
   renderNotes();
   renderEvents();
   renderSettings();
@@ -2051,13 +2283,23 @@ function getInitialView(){
   if(state.settings.defaultTab === 'classes') return 'classes';
   if(state.settings.defaultTab === 'works') return 'works';
   if(state.settings.defaultTab === 'planner') return 'planner';
+  if(state.settings.defaultTab === 'occasions') return 'occasions';
   if(state.settings.defaultTab === 'notes') return 'notes';
   return 'dashboard';
 }
 
 let lastPruneDay = null;
 
+// keeps the plus buttons exactly one gap above the bottom nav (0 on desktop where the nav is hidden)
+function syncNavHeight(){
+  const nav = document.querySelector('.bottom-nav');
+  document.documentElement.style.setProperty('--nav-h', (nav ? nav.offsetHeight : 0) + 'px');
+}
+window.addEventListener('resize', syncNavHeight);
+if(window.ResizeObserver && document.querySelector('.bottom-nav')) new ResizeObserver(syncNavHeight).observe(document.querySelector('.bottom-nav'));
+
 function init(){
+  syncNavHeight();
   applyTheme();
   pruneNotifiedKeys();
   pruneOldWorks();
@@ -2068,6 +2310,9 @@ function init(){
   switchView(getInitialView());
 
   setInterval(tick, 20000);
+
+  const wait = Math.max(0, 900 - performance.now());
+  setTimeout(() => { if(window.__hidePreloader) window.__hidePreloader(); }, wait);
 }
 
 init();

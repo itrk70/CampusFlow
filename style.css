@@ -620,24 +620,26 @@ body[data-theme="dark"] .stat-card__num{ color: var(--text); }
 .empty-state__body{ font-size: 13px; color: var(--text-muted); max-width: 280px; line-height: 1.5; }
 
 /* ============ FAB ============ */
+/* Pinned to the screen (not to the page area) so it always sits at the bottom-right,
+   just above the bottom nav. --nav-h is the nav's real height, measured by app.js. */
 .fab{
-  position: absolute;
-  right: 20px; bottom: 24px;
-  width: 54px; height:54px;
+  position: fixed;
+  right: max(20px, calc(50vw - 300px));
+  bottom: calc(var(--nav-h, 0px) + 18px);
+  width: 56px; height: 56px;
   border-radius: 50%;
   background: var(--emerald);
   color: #fff;
-  font-size: 26px;
-  border: none;
-  box-shadow: 0 10px 24px rgba(30,122,95,0.4);
+  font-size: 28px;
+  border: 2px solid rgba(255,255,255,0.9);
+  box-shadow: 0 10px 24px rgba(30,122,95,0.45), 0 2px 6px rgba(0,0,0,0.25);
   cursor: pointer;
   display:flex; align-items:center; justify-content:center;
   line-height: 1;
   z-index: 10;
+  -webkit-tap-highlight-color: transparent;
 }
-@media (max-width: 879px){
-  .fab{ bottom: 24px; }
-}
+.fab:active{ transform: scale(.94); }
 
 /* ============ SETTINGS ROWS ============ */
 .setting-row{
@@ -1333,3 +1335,165 @@ body[data-theme="dark"] .stat-card__num{ color: var(--text); }
 .timeline-card.planner-card[data-kind="exam"]{ border-left-color: var(--info); }
 .timeline-card.planner-card[data-kind="event"]{ border-left-color: var(--amber); }
 .timeline-card.planner-card[data-status="closed"]{ border-left-color: var(--slate); }
+
+
+/* =========================================================
+   VERSION 4 ADDITIONS
+   ========================================================= */
+
+/* ---------- Pixel font (assets/fonts/pixel.ttf) ---------- */
+@font-face{
+  font-family: 'Pixel';
+  src: url('assets/fonts/pixel.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+.pixel-text{
+  font-family: 'Pixel', var(--font-mono), monospace !important;
+  font-weight: 400 !important;
+  font-size: 28px !important;
+  letter-spacing: .08em;
+  text-transform: none;
+}
+.empty-state--soon .empty-state__mark{ font-size: 26px; }
+
+/* ---------- PPT special work card ---------- */
+.work-card.work-card--ppt[data-status]{
+  background: #E1F2FB;
+  border-left-color: #0B5A9E;
+}
+.work-card--ppt .timeline-card__subject{ color:#0B5A9E; }
+.work-card--ppt .timeline-card__meta,
+.work-card--ppt .timeline-card__professor,
+.work-card--ppt .type-chip,
+.work-card--ppt .check-row,
+.work-card--ppt .link-btn{ color:#093E6C; }                       /* light mode */
+body[data-theme="dark"] .work-card--ppt .timeline-card__meta,
+body[data-theme="dark"] .work-card--ppt .timeline-card__professor,
+body[data-theme="dark"] .work-card--ppt .type-chip,
+body[data-theme="dark"] .work-card--ppt .check-row,
+body[data-theme="dark"] .work-card--ppt .link-btn{ color:#2B2B2B; } /* dark mode */
+.work-card--ppt .type-chip{ border-color: rgba(11,90,158,0.35); background: transparent; }
+.work-card--ppt .check-box{ background:#fff; border-color: rgba(11,90,158,0.45); }
+.work-card--ppt .check-row.is-checked .check-box{ background: #0B5A9E; border-color: #0B5A9E; }
+.work-card--ppt .check-box svg{ stroke:#fff; }
+
+/* ---------- Canceled classes: gray, just like Completed ---------- */
+.timeline-card[data-status="canceled"]{ border-left-color: var(--slate); opacity: .72; }
+.timeline-card[data-status="canceled"] .timeline-card__subject,
+.timeline-card[data-status="canceled"] .timeline-card__meta{ text-decoration: none; }
+.status-pill[data-status="canceled"]{ background: var(--slate-bg); color: var(--slate); }
+.cancel-reason{ color: var(--slate); }
+
+/* ---------- Occasion cards ---------- */
+.planner-card[data-kind="festival"]{ border-left-color: var(--emerald); }
+.planner-card[data-kind="other"]{ border-left-color: var(--slate); }
+.planner-card[data-kind="festival"] .chip-plan{ background: var(--emerald-bg); color: var(--emerald); }
+.planner-card[data-kind="other"] .chip-plan{ background: var(--slate-bg); color: var(--slate); }
+.planner-card[data-status="closed"]{ border-left-color: var(--slate); opacity:.7; }
+
+/* ---------- Small modals / choice buttons / top-most modals ---------- */
+.modal--sm{ max-width: 360px; }
+.modal-backdrop--top{ z-index: 190; }
+.choice-list{ display:flex; flex-direction:column; gap:10px; padding-bottom: 22px; }
+.choice-btn{
+  display:flex; flex-direction:column; gap:3px; text-align:left; width:100%;
+  background: var(--paper); color: var(--text); font-family: inherit;
+  border: 1.5px solid var(--line); border-radius: 14px; padding: 14px 16px; cursor:pointer;
+}
+.choice-btn strong{ font-size:15px; }
+.choice-btn span{ font-size:12.5px; color: var(--text-muted); }
+.choice-btn:hover, .choice-btn:active{ border-color: var(--emerald); background: var(--emerald-bg); }
+
+/* ---------- Bottom nav: 5 tabs + Menu, solid (active) vs outline (idle) ---------- */
+.bottom-nav{
+  --nav-bg: var(--ink-2);
+  --pop-bg: #12365F;
+  position: relative;
+  background: var(--nav-bg);
+  border-top: none;
+  border-radius: 18px 18px 0 0;
+  padding: 10px 4px calc(env(safe-area-inset-bottom, 0px) + 8px);
+}
+body[data-theme="dark"] .bottom-nav{ --nav-bg: #0C1728; --pop-bg: #12335A; }
+.nav-btn{
+  font-size: 11px; letter-spacing: 0; gap: 4px;
+  color: rgba(244,241,233,0.66);
+  font-weight: 500;
+  transition: color .15s ease;
+}
+.nav-btn.is-active{ color: #fff; font-weight: 700; }
+.nav-btn .ic, .menu-pop__icon .ic{ display:flex; }
+.nav-btn .ic svg, .menu-pop__icon .ic svg{ width: 23px; height: 23px; }
+.ic .ic-solid{ display:none; }
+.is-active > .nav-btn__icon .ic-line, .is-active > .menu-pop__icon .ic-line{ display:none; }
+.is-active > .nav-btn__icon .ic-solid, .is-active > .menu-pop__icon .ic-solid{ display:block; }
+.nav-btn__label{ max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+.menu-overlay{ position: fixed; inset: 0; background: rgba(8,12,22,0.42); z-index: 18; animation: menuFade .18s ease; }
+.menu-overlay[hidden]{ display:none; }
+.menu-pop{
+  position:absolute; left:50%; bottom: calc(100% + 12px);
+  transform: translateX(-50%);
+  width: max-content; max-width: calc(100vw - 16px);
+  display:flex; gap:2px; padding: 16px 8px 12px;
+  background: var(--pop-bg); border-radius: 14px;
+  box-shadow: 0 14px 36px rgba(0,0,0,0.38);
+  animation: menuPop .18s ease;
+}
+.menu-pop[hidden]{ display:none; }
+.menu-pop::after{
+  content:''; position:absolute; left:50%; bottom:-7px; width:16px; height:16px;
+  background: var(--pop-bg); transform: translateX(-50%) rotate(45deg); border-radius: 3px;
+}
+.menu-pop__item{
+  position:relative; z-index:1;
+  display:flex; flex-direction:column; align-items:center; gap:7px;
+  flex: 1 1 0; min-width: 62px; padding: 2px 6px;
+  background:none; border:none; cursor:pointer; font-family:inherit;
+  color: rgba(244,241,233,0.82); font-size: 12px; font-weight: 500;
+}
+.menu-pop__item.is-active{ color:#fff; font-weight:700; }
+@keyframes menuPop{ from{ opacity:0; transform: translateX(-50%) translateY(8px) scale(.97); } to{ opacity:1; transform: translateX(-50%) translateY(0) scale(1); } }
+@keyframes menuFade{ from{ opacity:0; } to{ opacity:1; } }
+@media (min-width: 880px){ .menu-overlay{ display:none !important; } }
+
+/* ---------- Notepad: working bullet/number lists (the global reset removed list markers) ---------- */
+.note-editor__body ul{ list-style: disc outside; margin: 6px 0; padding-left: 26px; }
+.note-editor__body ol{ list-style: decimal outside; margin: 6px 0; padding-left: 28px; }
+.note-editor__body li{ display: list-item; padding-left: 2px; }
+.note-editor__body sub, .note-editor__body sup{ font-size: .72em; line-height: 0; }
+.note-editor__body [style*="background-color"]{ color:#111; border-radius:2px; } /* highlighted text stays readable in dark mode (an inline text color still wins) */
+
+/* ---------- Notepad: colour / highlight tools ---------- */
+.tb-a{ display:flex; flex-direction:column; align-items:center; font-weight:700; font-size:16px; line-height:1; }
+.tb-a i{ display:block; width:16px; height:3.5px; border-radius:2px; margin-top:2px; background: currentColor; }
+.tb-x{ font-size:14px; font-weight:600; line-height:1; }
+.tb-x sub, .tb-x sup{ font-size:9px; }
+#tb-hl-bar{ stroke: currentColor; }
+.note-toolbar button[aria-expanded="true"]{ background: var(--line); }
+.note-colors{
+  display:flex; flex-direction:column; gap:10px; padding: 10px 14px 12px;
+  background: var(--paper); border-bottom: 1px solid var(--line);
+}
+.note-colors[hidden]{ display:none; }
+.note-colors__label{ font-size:11px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color: var(--text-muted); }
+.note-colors__grid{ display:flex; flex-wrap:wrap; gap:9px; }
+.swatch{
+  width:30px; height:30px; border-radius:50%; padding:0; cursor:pointer;
+  border: 2px solid rgba(128,128,128,0.45);
+}
+.swatch:active{ transform: scale(.92); }
+.swatch--none{
+  background: linear-gradient(135deg, transparent 44%, #D32F2F 44%, #D32F2F 56%, transparent 56%), var(--paper-raised);
+}
+.note-colors__custom{
+  align-self:flex-start; background: var(--paper-raised); color: var(--text);
+  border: 1.5px dashed var(--line); border-radius: 10px; padding: 8px 14px;
+  font-family: inherit; font-size: 13px; font-weight: 600; cursor:pointer;
+}
+.note-colors__custom[hidden]{ display:none; }
+.cp-row{ display:flex; gap:12px; align-items:center; margin-bottom: 4px; }
+#cp-picker{ width:64px; height:48px; padding:0; border:none; background:none; cursor:pointer; flex-shrink:0; }
+.cp-preview{ flex:1; height:48px; border-radius:10px; border:1px solid var(--line); }
