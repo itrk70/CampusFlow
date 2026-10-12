@@ -1149,10 +1149,80 @@ document.addEventListener('click', (e) => {
   if(!e.target.closest('#menu-pop') && !e.target.closest('#btn-nav-menu')) setMenuOpen(false); // any click outside closes it
 });
 document.addEventListener('keydown', (e) => { if(e.key === 'Escape') setMenuOpen(false); });
-document.getElementById('btn-jump-today').addEventListener('click', () => {
-  viewingDate = new Date();
-  renderTimeline();
+// the circular calendar icon in the Classes header opens the schedule calendar
+document.getElementById('btn-jump-today').addEventListener('click', () => openCalendar());
+document.getElementById('btn-view-calendar').addEventListener('click', () => openCalendar());
+
+// =========================================================
+// SCHEDULE CALENDAR
+// =========================================================
+const CAL_WEEK_STARTS_ON = 1;                          // 1 = Monday first (like the week ribbon), 0 = Sunday first
+const CAL_DAY_NAMES = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+let calOffset = 0;                                     // 0 = this month, -1 = previous month, +1 = next month
+
+function openCalendar(){
+  calOffset = 0;
+  renderCalendar();
+  openModal('modal-calendar');
+}
+
+function renderCalendar(){
+  const now = new Date();
+  const first = new Date(now.getFullYear(), now.getMonth() + calOffset, 1);
+  const year = first.getFullYear(), month = first.getMonth();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  document.getElementById('calendar-title').textContent =
+    first.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+
+  // weekday header (Mon … Sun, Sundays in red)
+  document.getElementById('calendar-weekdays').innerHTML = Array.from({ length: 7 }, (_, i) => {
+    const dow = (CAL_WEEK_STARTS_ON + i) % 7;
+    return `<span class="${dow === 0 ? 'is-sun' : ''}">${CAL_DAY_NAMES[dow]}</span>`;
+  }).join('');
+
+  const lead = (first.getDay() - CAL_WEEK_STARTS_ON + 7) % 7; // empty cells before the 1st
+  const todayIso = todayISO(now);
+  const viewingIso = todayISO(viewingDate);
+  let html = '<span class="cal-day cal-day--blank"></span>'.repeat(lead);
+  for(let day = 1; day <= daysInMonth; day++){
+    const d = new Date(year, month, day);
+    const iso = todayISO(d);
+    const instances = getInstancesForDate(d);
+    const live = instances.filter(i => !i.canceledBy).length;
+    const dots =
+      (live > 0 ? '<i class="cal-dot cal-dot--classes"></i>' : (instances.length > 0 ? '<i class="cal-dot cal-dot--canceled"></i>' : '')) +
+      (occasionsForDate(iso).length > 0 ? '<i class="cal-dot cal-dot--occasion"></i>' : '');
+    const cls = 'cal-day' + (d.getDay() === 0 ? ' is-sun' : '') + (iso === todayIso ? ' is-today' : '') + (iso === viewingIso ? ' is-viewing' : '');
+    html += `<button type="button" class="${cls}" data-cal-date="${iso}" aria-label="${d.toLocaleDateString(undefined, { weekday:'long', day:'numeric', month:'long', year:'numeric' })}">
+      <span class="cal-day__num">${day}</span><span class="cal-day__dots">${dots}</span></button>`;
+  }
+  document.getElementById('calendar-grid').innerHTML = html;
+
+  // Previous / Next Month buttons
+  const dom = now.getDate();
+  const daysThisMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+  const inFirst7 = dom <= 7;
+  const inLast7 = dom > daysThisMonth - 7;
+  let showPrev = false, showNext = false;
+  if(calOffset === 0){ showPrev = inFirst7; showNext = inLast7; }  // only near the start / end of the month
+  else if(calOffset > 0){ showPrev = true; }                       // on next month: way back to this month
+  else { showNext = true; }                                        // on previous month: way back to this month
+  document.getElementById('cal-prev').hidden = !showPrev;
+  document.getElementById('cal-next').hidden = !showNext;
+}
+
+document.getElementById('calendar-grid').addEventListener('click', (e) => {
+  const cell = e.target.closest('[data-cal-date]');
+  if(!cell) return;
+  const [y, m, d] = cell.getAttribute('data-cal-date').split('-').map(Number);
+  viewingDate = new Date(y, m - 1, d);
+  closeModal('modal-calendar');
+  switchView('classes');
 });
+document.getElementById('cal-prev').addEventListener('click', () => { calOffset -= 1; renderCalendar(); });
+document.getElementById('cal-next').addEventListener('click', () => { calOffset += 1; renderCalendar(); });
+
 document.getElementById('btn-see-all-today').addEventListener('click', () => {
   viewingDate = new Date();
   switchView('classes');
@@ -2293,7 +2363,7 @@ let lastPruneDay = null;
 // keeps the plus buttons exactly one gap above the bottom nav (0 on desktop where the nav is hidden)
 function syncNavHeight(){
   const nav = document.querySelector('.bottom-nav');
-  document.documentElement.style.setProperty('--nav-h', (nav ? nav.offsetHeight : 0) + 'px');
+  document.documentElement.style.setProperty('--nav-h', (nav && nav.offsetHeight ? nav.offsetHeight : 0) + 'px');
 }
 window.addEventListener('resize', syncNavHeight);
 if(window.ResizeObserver && document.querySelector('.bottom-nav')) new ResizeObserver(syncNavHeight).observe(document.querySelector('.bottom-nav'));

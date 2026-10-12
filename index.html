@@ -15,7 +15,7 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=4.2.6">
+  <link rel="stylesheet" href="style.css?v=4.3.1">
   <script src="https://kit.fontawesome.com/826e39b053.js" crossorigin="anonymous"></script>
   <style id="preloader-css">
     #preloader{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:#F4F1E9;transition:opacity .45s ease,visibility .45s ease}
@@ -173,7 +173,10 @@
         </section>
 
         <section class="panel">
-          <h2 class="panel__title">Weekly overview</h2>
+          <div class="panel__title-row">
+            <h2 class="panel__title">Classes Overview</h2>
+            <button class="link-btn" id="btn-view-calendar">View Calendar</button>
+          </div>
           <div class="week-ribbon" id="week-ribbon"></div>
         </section>
 
@@ -208,7 +211,7 @@
             <h1 class="head__title">Today's Classes</h1>
             <p class="head__eyebrow" id="classes-date-line">Wednesday, October 25th</p>
           </div>
-          <button class="icon-btn" id="btn-jump-today" aria-label="Jump to today"><svg viewBox="0 0 24 24" fill="none"
+          <button class="icon-btn" id="btn-jump-today" aria-label="Open calendar"><svg viewBox="0 0 24 24" fill="none"
               stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
               <rect x="3.5" y="5" width="17" height="16" rx="2.5" />
               <path d="M8 3v4M16 3v4M3.5 10h17" />
@@ -226,7 +229,7 @@
         <ol id="timeline-list" class="timeline-list"></ol>
       </main>
 
-      <button class="fab" id="btn-fab-add" aria-label="Add a session">+</button>
+      <button class="add-fab" id="btn-fab-add" aria-label="Add a session"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
     </section>
 
     <!-- ============ VIEW: WORKS ============ -->
@@ -259,7 +262,7 @@
         <ol id="works-list" class="timeline-list"></ol>
       </main>
 
-      <button class="fab" id="btn-fab-add-work" aria-label="Add a work">+</button>
+      <button class="add-fab" id="btn-fab-add-work" aria-label="Add a work"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
     </section>
 
     <!-- ============ VIEW: EVENTS ============ -->
@@ -322,7 +325,7 @@
         </div>
         <ol id="occasions-list" class="timeline-list"></ol>
       </main>
-      <button class="fab" id="btn-fab-add-occasion" aria-label="Add an occasion">+</button>
+      <button class="add-fab" id="btn-fab-add-occasion" aria-label="Add an occasion"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
     </section>
 
     <!-- ============ VIEW: NOTES ============ -->
@@ -344,7 +347,7 @@
         </div>
         <ol id="notes-list" class="timeline-list"></ol>
       </main>
-      <button class="fab" id="btn-fab-add-note" aria-label="Add a note">+</button>
+      <button class="add-fab" id="btn-fab-add-note" aria-label="Add a note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
     </section>
 
     <!-- ============ VIEW: SETTINGS ============ -->
@@ -538,7 +541,7 @@
           <h2 class="panel__title">About &amp; info</h2>
           <div class="about-row"><span>Privacy policy</span><span class="about-row__val">Everything stays on-device
               ›</span></div>
-          <div class="about-row"><span>Version</span><span class="about-row__val">v4.2.6</span></div>
+          <div class="about-row"><span>Version</span><span class="about-row__val">v4.3.1</span></div>
           <div class="about-row" id="storage-row"><span>Storage used</span><span class="about-row__val"
               id="storage-used">—</span></div>
         </section>
@@ -931,6 +934,29 @@
     </div>
   </div>
 
+  <!-- ============ MODAL: SCHEDULE CALENDAR ============ -->
+  <div class="modal-backdrop" id="modal-calendar">
+    <div class="modal modal--cal" role="dialog" aria-modal="true" aria-labelledby="calendar-title">
+      <div class="modal__head">
+        <h2 id="calendar-title">Calendar</h2>
+        <button class="modal__close" data-close-modal="modal-calendar" aria-label="Close calendar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+      </div>
+      <div class="modal__body">
+        <div class="cal-weekdays" id="calendar-weekdays"></div>
+        <div class="cal-grid" id="calendar-grid"></div>
+        <div class="cal-legend">
+          <span><i class="cal-dot cal-dot--classes"></i>Classes</span>
+          <span><i class="cal-dot cal-dot--canceled"></i>All canceled</span>
+          <span><i class="cal-dot cal-dot--occasion"></i>Occasion</span>
+        </div>
+        <div class="cal-nav">
+          <button type="button" class="link-btn" id="cal-prev" hidden>← Previous Month</button>
+          <button type="button" class="link-btn cal-nav__next" id="cal-next" hidden>Next Month →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- ============ MODAL: ADD/EDIT OCCASION ============ -->
   <div class="modal-backdrop" id="modal-occasion">
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-occasion-title">
@@ -1082,9 +1108,9 @@
   <div class="toast" id="toast"></div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" crossorigin="anonymous"></script>
-  <script src="events-data.js?v=4.2.6"></script>
-  <script src="presets-data.js?v=4.2.6"></script>
-  <script src="app.js?v=4.2.6"></script>
+  <script src="events-data.js?v=4.3.1"></script>
+  <script src="presets-data.js?v=4.3.1"></script>
+  <script src="app.js?v=4.3.1"></script>
 </body>
 
 </html>

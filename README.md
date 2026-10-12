@@ -1,4 +1,4 @@
-# CampusFlow — v4.2.6
+# CampusFlow — v4.3.1
 
 A privacy-first, offline schedule tracker for students. No login, no server, no database — everything lives in your browser's `localStorage`. This version adds attendance tracking, a Works (assignments/lab) tracker, a campus Events board, a digital student ID card, and a developer page.
 
